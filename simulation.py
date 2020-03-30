@@ -72,7 +72,7 @@ class Simulation():
 
         self.intensive_testing_window = InteractiveSimParam_dayslider('Intensive testing and tracking window period (days)', 0 , 365, 1, [75, 365], type = 'rangeslider')
         self.fraction_missed_cases = InteractiveSimParam("Fraction of undiagnosed infections in spite of intensive testing", 0 , 1, 0.01, 0.1)
-        self.day_of_testing = InteractiveSimParam("Delay between infection and test/quarantine during intensive testing regime", 0 , self.active_days, 1, 3)
+        self.day_of_testing = InteractiveSimParam("Days during witch someone is infected and can spread the disease before they are tested and quarantined", 0 , self.active_days, 1, 3)
 
 
         # self.testing_schem_start =
