@@ -13,9 +13,11 @@ class AppCreator():
         self.simulation = simulation
 
     def create_app_layout(self):
+        title = [html.H1("COVID-19 Epidemic simulator")]
+        note = [html.H5("Please wait a couple seconds after moving a slider, as simulation can take a few seconds with a large population size")]
         sliders_top, sliders_bottom = self.get_sliders()
         map_graph, line_plot = self.get_graphs()
-        html_div_list = sliders_top + sliders_bottom + line_plot + map_graph
+        html_div_list = title + note + sliders_top + sliders_bottom + line_plot + map_graph
         return html_div_list
 
     def get_graphs(self):
