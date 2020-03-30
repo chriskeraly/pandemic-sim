@@ -2,15 +2,18 @@ import numpy as np
 import copy
 from collections import OrderedDict
 import dash_core_components as dcc
+import dash_html_components as html
+
 
 class InteractiveSimParam():
-    def __init__(self, id, min, max, step, default_value, type = "slider", **kwargs):
+    def __init__(self, id, min, max, step, default_value, type = "slider", category = None, **kwargs):
         self.type = type
         self.id = id
         self.min = min
         self.max = max
         self.step = step
         self.default_value = default_value
+        self.category = category
         self.kwargs = kwargs
 
     def set_value(self, value):
@@ -21,18 +24,36 @@ class InteractiveSimParam():
 
     def get_widget(self):
         if self.type == 'slider':
+
             return dcc.Slider(id=self.id,
                        min=self.min,
                        max=self.max,
                        step=self.step,
                        value=self.default_value,
+                       marks = {val:'{:.2f}'.format(val) for val in np.linspace(self.min,self.max,10)},
                        **self.kwargs)
         if self.type == 'rangeslider':
             return dcc.RangeSlider(id=self.id,
                        min=self.min,
                        max=self.max,
                        step=self.step,
-                       value=self.default_value)
+                       value=self.default_value,
+                    marks = {val:'{:.2f}'.format(val) for val in np.linspace(self.min,self.max,10)},
+                                   )
+
+    def get_widget_with_labels(self):
+        widget = []
+        widget.append(html.H6(self.id))
+        widget.append(self.get_widget())
+        widget.append(html.Div(id=self.id + '_selected_value'))
+        return widget
+
+class InteractiveSimParam_dayslider(InteractiveSimParam):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+
 
 
 class Simulation():
@@ -41,15 +62,15 @@ class Simulation():
         print("created simulation")
         self.initial_contamination = 10
         self.active_days = 21
-        self.sim_days = InteractiveSimParam('sim_days', 1 , 365, 1, 365)
-        self.population = InteractiveSimParam('population', 10, 100000, 1, 10000)
-        self.R0 = InteractiveSimParam('R0', 0 , 20 , 0.01,4)
-        self.death_rate = InteractiveSimParam('death_rate',0,1,0.001,0.01)
+        self.sim_days = InteractiveSimParam('Simulation duration (days)', 1 , 365, 1, 150, category = 'Simulation parameters')
+        self.population = InteractiveSimParam('Population Simulated', 10, 100000, 1, 10000, category = 'Simulation parameters')
+        self.R0 = InteractiveSimParam('R0: With no changes to behavior, how many people will one infected person infect', 0 , 20 , 0.01,4)
+        self.death_rate = InteractiveSimParam('Death Rate',0,0.1,0.001,0.01)
 
-        self.social_isolation_window = InteractiveSimParam('Social Isolation window', 0 , 365, 1, [21, 70], type = 'rangeslider')
+        self.social_isolation_window = InteractiveSimParam_dayslider('Social Isolation window', 0 , 365, 1, [21, 70], type = 'rangeslider')
         self.social_isolation_level = InteractiveSimParam("Fraction of social contact reduction", 0 , 1, 0.01, 0.8)
 
-        self.intensive_testing_window = InteractiveSimParam('Intensive testing and tracking start date', 0 , 365, 1, [70, 365], type = 'rangeslider')
+        self.intensive_testing_window = InteractiveSimParam_dayslider('Intensive testing and tracking start date', 0 , 365, 1, [75, 365], type = 'rangeslider')
         self.fraction_missed_cases = InteractiveSimParam("Fraction of missed cases in intensive testing", 0 , 1, 0.01, 0.1)
         self.day_of_testing = InteractiveSimParam("Day people get testing after infection", 0 , self.active_days, 1, 3)
 
@@ -64,7 +85,7 @@ class Simulation():
 
         self.InteractiveSimParams = OrderedDict()
         for id, thing in self.__dict__.items():
-            if type(thing) == InteractiveSimParam:
+            if isinstance(thing, InteractiveSimParam):
                 self.InteractiveSimParams[thing.id]=thing
 
     def run(self):
@@ -115,7 +136,7 @@ class Simulation():
                 #TODO check if not already contaminated
                 x_k = np.random.randint(self.x_max)
                 y_k = np.random.randint(self.y_max)
-                self.map[day][x_k, y_k] = 1
+                self.map[day][x_k, y_k] = np.min((k,self.active_days-1))
         currently_infected_map = np.logical_and(self.map[day] > 0, self.map[day] < self.active_days)
         self.active_cases[day] = np.sum(currently_infected_map)
 

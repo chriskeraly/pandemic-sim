@@ -4,7 +4,7 @@ import dash_html_components as html
 import plotly.graph_objects as go
 import plotly.express as px
 import numpy as np
-
+from simulation import  InteractiveSimParam_dayslider
 # img_rgb = [[[255, 0, 0], [0, 255, 0], [0, 0, 255]],
 #            [[0, 255, 0], [0, 0, 255], [255, 0, 0]]]
 class AppCreator():
@@ -13,14 +13,15 @@ class AppCreator():
         self.simulation = simulation
 
     def create_app_layout(self):
-        html_div_list =  self.get_graphs() + self.get_sliders()
+        sliders_top, sliders_bottom = self.get_sliders()
+        map_graph, line_plot = self.get_graphs()
+        html_div_list = sliders_top + sliders_bottom + line_plot + map_graph
         return html_div_list
 
     def get_graphs(self):
-        return [ dcc.Graph(id='infected_cases'),
-            dcc.Graph(id="graph")]
+        return [html.H2("Animation of virus spread with time"),dcc.Graph(id='map graph')], [html.H2("Simulation results" ),dcc.Graph(id="line plot")]
 
-    def get_sliders(self):
+    def get_sliders_(self):
         sliders = []
         for k,isp in self.simulation.InteractiveSimParams.items():
             slider = isp.get_widget()
@@ -29,14 +30,53 @@ class AppCreator():
             sliders.append(html.Div(id = isp.id + '_selected_value'))
             sliders.append(slider)
 
+
+
+
+
         return sliders
 
+    def get_sliders(self):
+        sliders_sim_params = [html.Div(html.H2("Simulation Parameters"))]
+        sliders_sim_params.append(html.Div(self.simulation.sim_days.get_widget_with_labels(), style={'width': '48%', 'display': 'inline-block'}))
+        sliders_sim_params.append(html.Div(self.simulation.population.get_widget_with_labels(), style={'width': '48%', 'float': 'right', 'display': 'inline-block'}))
+
+        sliders_epidemic_params = [html.Div(html.H2("Viral Parameters"))]
+        sliders_epidemic_params.append(html.Div(self.simulation.R0.get_widget_with_labels(),
+                                           style={'width': '48%', 'display': 'inline-block'}))
+        sliders_epidemic_params.append(html.Div(self.simulation.death_rate.get_widget_with_labels(),
+                                           style={'width': '48%', 'float': 'right', 'display': 'inline-block'}))
+
+        sliders_top = [html.Div(sliders_sim_params + sliders_epidemic_params)]
+
+        sliders_social_isolation = []
+        sliders_social_isolation.append(html.Div(html.H2("Social Isolation parameters"),style={'width': '48%', 'display': 'inline-block'}))
+        sliders_social_isolation.append(html.Div(self.simulation.social_isolation_level.get_widget_with_labels(), style={'width': '48%', 'float': 'right', 'display': 'inline-block'}))
+        sliders_social_isolation.append(html.Div(self.simulation.social_isolation_window.get_widget_with_labels()))
+
+        sliders_intensive_testing = []
+        sliders_intensive_testing.append(html.Div(html.H2("Intensive Testing parameters")))
+        sliders_intensive_testing.append(html.Div(self.simulation.day_of_testing.get_widget_with_labels(),
+                                           style={'width': '48%', 'display': 'inline-block'}))
+        sliders_intensive_testing.append(html.Div(self.simulation.fraction_missed_cases.get_widget_with_labels(),
+                                           style={'width': '48%', 'float': 'right', 'display': 'inline-block'}))
+        sliders_intensive_testing.append(html.Div(self.simulation.intensive_testing_window.get_widget_with_labels()))
+
+        sliders_bottom = [html.Div(sliders_social_isolation + sliders_intensive_testing)]
+
+        return sliders_top , sliders_bottom
+
     def get_outputs(self):
+        day_sliders = []
+        for k, isp in self.simulation.InteractiveSimParams.items():
+            if type(isp) == InteractiveSimParam_dayslider:
+                day_sliders.append(dash.dependencies.Output(isp.id, 'max'))
+
         slider_selected_values = []
         for k,isp in self.simulation.InteractiveSimParams.items():
             slider_selected_values.append(dash.dependencies.Output( isp.id + '_selected_value', 'children'))
-        return slider_selected_values + [dash.dependencies.Output('graph','figure'),
-                dash.dependencies.Output('infected_cases', 'figure')]
+        return day_sliders + slider_selected_values + [dash.dependencies.Output('line plot','figure'),
+                dash.dependencies.Output('map graph', 'figure')]
 
     def get_inputs(self):
         inputs = []
@@ -50,18 +90,53 @@ class AppCreator():
     def create_slider_values_output(self):
         slider_selected_values = []
         for k, isp in self.simulation.InteractiveSimParams.items():
-            slider_selected_values.append(f"Simulation running with {isp.val()}")
+            slider_selected_values.append(f"Current value: {isp.val()}")
         return slider_selected_values
 
     def create_callback_output(self):
+        day_sliders_max_values = [self.simulation.sim_days.val()] * np.sum([1 if type(isp) == InteractiveSimParam_dayslider else 0 for k,isp in self.simulation.InteractiveSimParams.items()])
+        print(day_sliders_max_values)
         slider_selected_values = self.create_slider_values_output()
         fig = self.create_time_series_output()
         map = self.create_map_output()
-        return tuple(slider_selected_values+ fig+ map)
+        return tuple(day_sliders_max_values + slider_selected_values+ fig+ map)
 
     def create_time_series_output(self):
 
         fig = go.Figure()
+        fig.add_shape(
+            type = "rect",
+            x0 = self.simulation.social_isolation_window.val()[0],
+            x1 = np.min([self.simulation.social_isolation_window.val()[1],self.simulation.sim_days.val()]),
+            y0 = 1,
+            y1 = self.simulation.population.val(),
+            fillcolor="LightSalmon",
+            line_width = 0,
+            opacity=0.5,
+            layer="below"
+        )
+
+        fig.add_shape(
+            type = "rect",
+            x0 = self.simulation.intensive_testing_window.val()[0],
+            x1 =  np.min([self.simulation.intensive_testing_window.val()[1],self.simulation.sim_days.val()]),
+            y0 = 1,
+            y1 = self.simulation.population.val(),
+            fillcolor="LightSkyBlue",
+            line_width = 0,
+            opacity=0.5,
+            layer="below"
+        )
+
+        fig.add_trace(go.Scatter(
+            x=[np.mean([self.simulation.social_isolation_window.val()[0],np.min([self.simulation.social_isolation_window.val()[1],self.simulation.sim_days.val()])]),
+               np.mean([self.simulation.intensive_testing_window.val()[0],np.min([self.simulation.intensive_testing_window.val()[1],self.simulation.sim_days.val()])])],
+            y=[self.simulation.population.val()/2, self.simulation.population.val()/2],
+            text=["Social Isolation Window",
+                  "Intensive testing Window"],
+            mode="text",
+        ))
+
         fig.add_trace(go.Scatter(x=self.simulation.days,
                                  y=self.simulation.dead,  # self.simulation.active_cases,
                                  mode='markers',
@@ -82,7 +157,7 @@ class AppCreator():
 
         fig.update_yaxes(type="log", title="individuals",
                          range=[np.log10(1), np.log10(self.simulation.population.val())])
-        fig.update_xaxes(title="days")
+        fig.update_xaxes(title="days", range=[0, self.simulation.sim_days.val()])
         return [fig]
 
     def create_map_output(self):
@@ -104,6 +179,9 @@ class AppCreator():
         fig = go.Figure(
             data=[go.Heatmap(x=self.simulation.x, y=self.simulation.y, z=self.simulation.map[0])],
             layout=go.Layout(
+                yaxis = {'scaleanchor':'x'},
+                width = 700,
+                height = 700,
                 sliders = [ {
                         'active': 0,
                         'yanchor': 'top',
