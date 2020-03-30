@@ -67,12 +67,12 @@ class Simulation():
         self.R0 = InteractiveSimParam('R0: With no changes to behavior, how many people will one infected person infect', 0 , 20 , 0.01,4)
         self.death_rate = InteractiveSimParam('Death Rate',0,0.1,0.001,0.01)
 
-        self.social_isolation_window = InteractiveSimParam_dayslider('Social Isolation window', 0 , 365, 1, [21, 70], type = 'rangeslider')
-        self.social_isolation_level = InteractiveSimParam("Fraction of social contact reduction", 0 , 1, 0.01, 0.8)
+        self.social_isolation_window = InteractiveSimParam_dayslider('Social Isolation window period (days)', 0 , 365, 1, [21, 70], type = 'rangeslider')
+        self.social_isolation_level = InteractiveSimParam("Fraction of social contact reduction during social isolation", 0 , 1, 0.01, 0.8)
 
-        self.intensive_testing_window = InteractiveSimParam_dayslider('Intensive testing and tracking start date', 0 , 365, 1, [75, 365], type = 'rangeslider')
-        self.fraction_missed_cases = InteractiveSimParam("Fraction of missed cases in intensive testing", 0 , 1, 0.01, 0.1)
-        self.day_of_testing = InteractiveSimParam("Day people get testing after infection", 0 , self.active_days, 1, 3)
+        self.intensive_testing_window = InteractiveSimParam_dayslider('Intensive testing and tracking window period (days)', 0 , 365, 1, [75, 365], type = 'rangeslider')
+        self.fraction_missed_cases = InteractiveSimParam("Fraction of undiagnosed infections in spite of intensive testing", 0 , 1, 0.01, 0.1)
+        self.day_of_testing = InteractiveSimParam("Delay between infection and test/quarantine during intensive testing regime", 0 , self.active_days, 1, 3)
 
 
         # self.testing_schem_start =
@@ -91,6 +91,7 @@ class Simulation():
     def run(self):
         self.init_variables()
         self.run_algorithm()
+        print("%d kbytes" % (1e-3 * self.map[-1].size * self.map[-1].itemsize * len(self.map)))
 
     def create_map(self):
         self.x_max = self.y_max =self.side = int(np.floor(np.sqrt(self.population.val())))
@@ -207,9 +208,9 @@ class Simulation():
         # print( self.map[-1].tolist())
         # print(type(self.map[-1].tolist()[1]))\
         import sys
-        print(sys.getsizeof(self.map))
-        print(type(self.map[-1]))
-        print(self.map[-1].dtype)
+        # print(sys.getsizeof(self.map))
+        # print(type(self.map[-1]))
+        # print(self.map[-1].dtype)
         print("%d kbytes" % (1e-3 * self.map[-1].size * self.map[-1].itemsize * len(self.map)))
         return self.map[-1].tolist()
 
