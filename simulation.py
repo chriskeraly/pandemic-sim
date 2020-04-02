@@ -61,18 +61,18 @@ class Simulation():
     def __init__(self):
         print("created simulation")
         self.initial_contamination = 10
-        self.active_days = 21
-        self.sim_days = InteractiveSimParam('Simulation duration (days)', 1 , 365, 1, 150, category = 'Simulation parameters')
-        self.population = InteractiveSimParam('Population Simulated', 10, 100000, 1, 10000, category = 'Simulation parameters')
-        self.R0 = InteractiveSimParam('R0: With no changes to behavior, how many people will one infected person infect', 0 , 20 , 0.01,4)
+        self.active_days = 14
+        self.sim_days = InteractiveSimParam('Simulation duration (days)', 1 , 365, 1, 100, category = 'Simulation parameters')
+        self.population = InteractiveSimParam('Population Simulated', 10, 1000000, 1, 500000, category = 'Simulation parameters')
+        self.R0 = InteractiveSimParam('R0: With no changes to behavior, how many people will one infected person infect', 0 , 10 , 0.01,4)
         self.death_rate = InteractiveSimParam('Death Rate',0,0.1,0.001,0.01)
 
-        self.social_isolation_window = InteractiveSimParam_dayslider('Social Isolation window period (days)', 0 , 365, 1, [21, 70], type = 'rangeslider')
+        self.social_isolation_window = InteractiveSimParam_dayslider('Social Isolation window period (days)', 0 , 365, 1, [34, 55], type = 'rangeslider')
         self.social_isolation_level = InteractiveSimParam("Fraction of social contact reduction during social isolation", 0 , 1, 0.01, 0.8)
 
-        self.intensive_testing_window = InteractiveSimParam_dayslider('Intensive testing and tracking window period (days)', 0 , 365, 1, [75, 365], type = 'rangeslider')
-        self.fraction_missed_cases = InteractiveSimParam("Fraction of undiagnosed infections in spite of intensive testing", 0 , 1, 0.01, 0.1)
-        self.day_of_testing = InteractiveSimParam("Days during witch someone is infected and can spread the disease before they are tested and quarantined", 0 , self.active_days, 1, 3)
+        self.intensive_testing_window = InteractiveSimParam_dayslider('Intensive testing and tracking window period (days)', 0 , 365, 1, [50, 365], type = 'rangeslider')
+        self.fraction_missed_cases = InteractiveSimParam("Fraction of undiagnosed infections in spite of intensive testing", 0 , 1, 0.01, 0.03)
+        self.day_of_testing = InteractiveSimParam("Days during which someone is infected and can spread the disease before they are tested and quarantined", 1 , self.active_days, 1, 1)
 
 
         # self.testing_schem_start =
@@ -150,7 +150,7 @@ class Simulation():
             self.map[day] = self.map[day - 1] + np.ones(self.map[day].shape, dtype=np.int8) * yesterday_infected_map
             ## Figure out who gets tested and isolated
             if day> self.intensive_testing_window.val()[0] and day < self.intensive_testing_window.val()[1]:
-                folks_getting_tested = (self.map[day] == self.day_of_testing.val())
+                folks_getting_tested = (self.map[day] == self.day_of_testing.val()+1)
                 folks_found_positive = folks_getting_tested * (np.random.rand(self.x_max, self.y_max) > self.fraction_missed_cases.val())
 
                 #now either kill them or cure them (technically this shouldn't be done right now but they don't participate in the sim anymore anyways
