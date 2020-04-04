@@ -39,6 +39,23 @@ def update_infected_cases(*args):
     print(f'Callbacks created in {(callback_done-start)}')
     return callback_out
 
+@app.callback(creator.get_preset_button_outputs(),
+              creator.get_preset_button_inputs())
+def load_presets(clicked, country):
+    print(clicked)
+    return creator.create_preset_button_callback_output(country)
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
-    app.run_server()#debug = True)        return tuple(day_sliders_max_values + slider_selected_values+ fig+ map)
+    app.run_server(debug = True)        #return tuple(day_sliders_max_values + slider_selected_values+ fig+ map)

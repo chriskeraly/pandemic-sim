@@ -3,7 +3,7 @@ import copy
 from collections import OrderedDict
 import dash_core_components as dcc
 import dash_html_components as html
-
+from maps import Maps
 
 class InteractiveSimParam():
     def __init__(self, id, min, max, step, default_value, type = "slider", category = None, **kwargs):
@@ -60,10 +60,12 @@ class Simulation():
 
     def __init__(self):
         print("created simulation")
-        self.initial_contamination = 10
-        self.active_days = 14
+        self.initial_contamination = 100
+        self.illness_duration = 10
+        self.incubation_duration = 3
+        self.day_of_diagnosis = InteractiveSimParam('Day of Diagnosis after infection', 1, 10, 1, 7)
         self.sim_days = InteractiveSimParam('Simulation duration (days)', 1 , 365, 1, 100, category = 'Simulation parameters')
-        self.population = InteractiveSimParam('Population Simulated', 10, 1000000, 1, 500000, category = 'Simulation parameters')
+        self.population = InteractiveSimParam('Population Simulated', 10, 1000000, 1, 150000, category = 'Simulation parameters')
         self.R0 = InteractiveSimParam('R0: With no changes to behavior, how many people will one infected person infect', 0 , 10 , 0.01,4)
         self.death_rate = InteractiveSimParam('Death Rate',0,0.1,0.001,0.01)
 
@@ -72,10 +74,7 @@ class Simulation():
 
         self.intensive_testing_window = InteractiveSimParam_dayslider('Intensive testing and tracking window period (days)', 0 , 365, 1, [50, 365], type = 'rangeslider')
         self.fraction_missed_cases = InteractiveSimParam("Fraction of undiagnosed infections in spite of intensive testing", 0 , 1, 0.01, 0.03)
-        self.day_of_testing = InteractiveSimParam("Days during which someone is infected and can spread the disease before they are tested and quarantined", 1 , self.active_days, 1, 1)
-
-
-        # self.testing_schem_start =
+        self.day_of_testing = InteractiveSimParam("Days during which someone is infected and can spread the disease before they are tested and quarantined", 1 , self.illness_duration, 1, 1)
 
 
         self.register_InteractiveSimParams()
@@ -91,126 +90,74 @@ class Simulation():
     def run(self):
         self.init_variables()
         self.run_algorithm()
-        print("%d kbytes" % (1e-3 * self.map[-1].size * self.map[-1].itemsize * len(self.map)))
-
-    def create_map(self):
-        self.x_max = self.y_max =self.side = int(np.floor(np.sqrt(self.population.val())))
-        self.simulated_population = self.side**2
-        self.x = np.arange(self.x_max)
-        self.y = np.arange(self.y_max)
-        #TODO: Map should be a class
-        self.map = []
-        for i in self.days:
-            self.map.append(np.array(np.zeros((self.x_max, self.y_max), dtype=np.int8)))
-
-
-    # def get_xy(self, i):
-    #     x = self.x%self.y_max
-    #     y = dunno yet
-    #     return x, y
+        print("%d kbytes" % (1e-3 * self.maps.maps[-1].size * self.maps.maps[-1].itemsize * len(self.maps.maps)))
 
     def init_variables(self):
         self.days = np.arange(self.sim_days.val())
-        self.create_map()
-        self.virgin = np.ones(self.sim_days.val())
-        self.active_cases = np.zeros(self.sim_days.val())
-        self.dead = np.zeros(self.sim_days.val())
-        self.recovered = np.zeros(self.sim_days.val())
-        self.total_infected = np.zeros(self.sim_days.val())
-        # self.init_variables_algorithm()
+        self.maps = Maps(self.population.val(), self.days, self.incubation_duration, self.illness_duration, self.day_of_diagnosis.val())
 
-    # def init_variables_algorithm(self,algorithm = 'random'):
-    #     if algorithm == 'random':
-    #         self.random_
-    #
 
     def run_algorithm(self):
-        self.create_first_day()
+        self.maps.initialize_first_day(self.initial_contamination)
         for i in self.days[1:]:
             self.update_day(i)
+        self.get_results()
 
+    def get_results(self):
+        self.active_cases = self.maps.active
+        self.dead = self.maps.dead
+        self.recovered = self.maps.recovered
+        self.total_infected = self.maps.total_infected
+        self.diagnosed = self.maps.diagnosed
 
-    def create_first_day(self,algorithm = 'random'):
-        day = 0
-        if algorithm == 'random':
-            for k in np.arange(self.initial_contamination):
-                #TODO check if not already contaminated
-                x_k = np.random.randint(self.x_max)
-                y_k = np.random.randint(self.y_max)
-                self.map[day][x_k, y_k] = np.min((k,self.active_days-1))
-        currently_infected_map = np.logical_and(self.map[day] > 0, self.map[day] < self.active_days)
-        self.active_cases[day] = np.sum(currently_infected_map)
 
 
     def update_day(self, day, algorithm = 'random'):
 
         if algorithm == 'random':
-            ## Who is infected this morning?
-            yesterday_infected_map = np.logical_and(self.map[day-1] > 0, self.map[day-1] < self.active_days)
-            self.map[day] = self.map[day - 1] + np.ones(self.map[day].shape, dtype=np.int8) * yesterday_infected_map
-            ## Figure out who gets tested and isolated
-            if day> self.intensive_testing_window.val()[0] and day < self.intensive_testing_window.val()[1]:
-                folks_getting_tested = (self.map[day] == self.day_of_testing.val()+1)
-                folks_found_positive = folks_getting_tested * (np.random.rand(self.x_max, self.y_max) > self.fraction_missed_cases.val())
+            self.maps.initialize_day(day)
 
-                #now either kill them or cure them (technically this shouldn't be done right now but they don't participate in the sim anymore anyways
-                dead_mask = np.random.rand(self.x_max, self.y_max) < self.death_rate.val()
+            ## Kill people if they have reached the end of the illness and they are unlucky
+
+            folks_who_die = self.maps.get_end_of_illness_folk(day) * (self.maps.get_random_map() < self.death_rate.val())
+            # print(folks_who_die.shape)
+            self.maps.kill(day, folks_who_die)
+            self.maps.recover(day, np.logical_not(folks_who_die)* self.maps.get_end_of_illness_folk(day))
+
+
+            # Figure out who gets tested and isolated
+            if day> self.intensive_testing_window.val()[0] and day < self.intensive_testing_window.val()[1]:
+                folks_getting_tested = self.maps.get_folks_at_day(day, self.incubation_duration + self.day_of_testing.val())
+                folks_found_positive = folks_getting_tested * (self.maps.get_random_map() > self.fraction_missed_cases.val())
+
+                # now either kill them or cure them (technically this shouldn't be done right now but they don't participate in the sim anymore anyways)
+                dead_mask = self.maps.get_random_map() < self.death_rate.val()
                 folks_dying = folks_found_positive * dead_mask
-                folks_cured = np.logical_and(folks_found_positive ,np.logical_not(dead_mask))
-                self.map[day][folks_dying] = self.active_days *2
-                self.map[day][folks_cured] = self.active_days - 1
+                folks_cured = np.logical_and(folks_found_positive , np.logical_not(dead_mask))
+                self.maps.kill(day, folks_dying)
+                self.maps.quarantine(day, folks_cured)
 
             ## Figure out new contaminations
-            # print(currently_infected_map)
-            # print(self.map[day-1])
 
             if day> self.social_isolation_window.val()[0] and day < self.social_isolation_window.val()[1]:
                 Reff = self.R0.val()*(1- self.social_isolation_level.val())
             else:
                 Reff = self.R0.val()
 
-            total_new_contaminations = np.floor(Reff * self.active_cases[day - 1]/self.active_days)
-
-            frac = Reff * self.active_cases[day - 1]/self.active_days - total_new_contaminations
+            total_new_contaminations = int(np.floor(Reff * self.maps.contagious[day - 1]/(self.illness_duration - self.incubation_duration)))
+            # print(f"new contam = {total_new_contaminations}")
+            frac = Reff * self.maps.contagious[day - 1]/(self.illness_duration - self.incubation_duration) - total_new_contaminations
 
             if np.random.rand()<frac: #that small fraction did result in a death
-                x_k = np.random.randint(self.x_max)
-                y_k = np.random.randint(self.y_max)
-                if self.map[day - 1][x_k, y_k] == 0:
-                    self.map[day][x_k, y_k] = 1
-            for k in np.arange(total_new_contaminations):
+                total_new_contaminations +=1
+            # print(f"new contam = {total_new_contaminations}")
 
-                x_k = np.random.randint(self.x_max)
-                y_k = np.random.randint(self.y_max)
-                if self.map[day-1][x_k, y_k] == 0:
-                    self.map[day][x_k, y_k] = 1
-            # today_infected_map = np.logical_and(self.map[day] > 0, self.map[day] < self.active_days)
+            self.maps.contaminate_random(day, total_new_contaminations)
 
-            ##Figure out deaths
-
-            folks_who_can_die = self.map[day] == self.active_days -1
-            folks_who_die = folks_who_can_die * (np.random.rand(self.x_max, self.y_max) < self.death_rate.val())
-
-            self.map[day] += folks_who_die * (self.active_days + 1)
-            today_infected_map = np.logical_and(self.map[day] > 0, self.map[day] < self.active_days)
-            self.active_cases[day] = np.sum(today_infected_map)
-            self.total_infected[day] = np.sum(self.map[day]!=0)
-            self.recovered = np.sum(self.map[day]==self.active_days -1 )
-            self.dead[day] = np.sum(self.map[day] == self.active_days *2)
+            self.maps.update_counters(day)
 
 
     def get_last_map(self):
-        # print(self.map[-1])
-        # print(self.active_cases)
-        # print(type(self.active_cases))
-        img_rgb = [[[255, 0, 0], [0, 255, 0], [0, 0, 255]],
-                   [[0, 255, 0], [0, 0, 255], [255, 0, 0]]]
-        # print( self.map[-1].tolist())
-        # print(type(self.map[-1].tolist()[1]))\
-        import sys
-        # print(sys.getsizeof(self.map))
-        # print(type(self.map[-1]))
-        # print(self.map[-1].dtype)
         print("%d kbytes" % (1e-3 * self.map[-1].size * self.map[-1].itemsize * len(self.map)))
         return self.map[-1].tolist()
 
@@ -219,5 +166,3 @@ class Simulation():
     def set_params(self, sim_params):
         for id, val in sim_params.items():
             self.InteractiveSimParams[id].set_value(val)
-
-

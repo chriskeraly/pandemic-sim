@@ -38,11 +38,13 @@ class AppCreator():
                 id = 'country selector',
                 options = options,
                 value = 'China'
-            )
+            ),
+             html.Button('Load Fit for this country', id='load fit'),
         ])]
 
     def get_sliders(self):
         sliders_sim_params = [html.Div(html.H2("Simulation Parameters"))]
+        sliders_sim_params.append(html.Div(self.simulation.day_of_diagnosis.get_widget_with_labels()))
         sliders_sim_params.append(html.Div(self.simulation.sim_days.get_widget_with_labels(), style={'width': '48%', 'display': 'inline-block'}))
         sliders_sim_params.append(html.Div(self.simulation.population.get_widget_with_labels(), style={'width': '48%', 'float': 'right', 'display': 'inline-block'}))
 
@@ -92,6 +94,24 @@ class AppCreator():
         inputs.append(dash.dependencies.Input('country selector', 'value'))
         return inputs
 
+    def get_preset_button_outputs(self):
+        outputs = []
+        for k,isp in self.simulation.InteractiveSimParams.items():
+            outputs.append(dash.dependencies.Output( isp.id , 'value'))
+        return outputs
+
+    def create_preset_button_callback_output(self, country):
+        outputs = []
+        if country in self.dataPlotter.presets.keys():
+            for k,isp in self.simulation.InteractiveSimParams.items():
+                outputs.append(self.dataPlotter.presets[country][isp.id])
+        return tuple(outputs)
+
+    def get_preset_button_inputs(self):
+        inputs = [dash.dependencies.Input('load fit','n_clicks')]
+        inputs.append(dash.dependencies.Input('country selector', 'value'))
+        return inputs
+
     def get_InteractiveSimParam_ids(self):
         return self.simulation.InteractiveSimParams.keys()
 
@@ -103,7 +123,7 @@ class AppCreator():
 
     def create_callback_output(self, country):
         day_sliders_max_values = [self.simulation.sim_days.val()] * np.sum([1 if type(isp) == InteractiveSimParam_dayslider else 0 for k,isp in self.simulation.InteractiveSimParams.items()])
-        print(day_sliders_max_values)
+        # print(day_sliders_max_values)
         slider_selected_values = self.create_slider_values_output()
         fig = self.create_time_series_output(country)
         # map = self.create_map_output()
@@ -162,6 +182,13 @@ class AppCreator():
             y=self.simulation.total_infected,
             mode='markers',
             name='Total Infected',
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=self.simulation.days,
+            y=self.simulation.diagnosed,
+            mode='markers',
+            name='Total Diagnosed',
         ))
 
         diagnosed_cases_fig_real , deaths_fig_real = self.dataPlotter.create_scatter(country)
