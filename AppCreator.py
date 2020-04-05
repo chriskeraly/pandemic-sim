@@ -17,13 +17,13 @@ class AppCreator():
 
     def create_app_layout(self):
         title = [html.H1("COVID-19 Epidemic simulator")]
-        note = [html.H5("An extremely simple epidemic calculator to look at trends and compare contries")]
+        note = [html.H5("An extremely simple epidemic calculator to look at trends and compare countries")]
         sliders_top, sliders_bottom = self.get_sliders()
         # map_graph, line_plot = self.get_graphs()
         line_plot = self.get_graphs()
         country_selector = self.get_country_selector()
 
-        html_div_list = title + note + sliders_top + sliders_bottom + line_plot + country_selector #+ map_graph
+        html_div_list = title + note + sliders_top + sliders_bottom + country_selector + line_plot  #+ map_graph
         return html_div_list
 
     def get_graphs(self):

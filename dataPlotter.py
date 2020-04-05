@@ -79,7 +79,7 @@ class DataPlotter():
         self.df = self.load_data()
 
     def load_data(self):
-        return read_csv("data/covid-19-cases-march-30-2020.csv")
+        return read_csv("data/covid-19-cases-april-4-2020.csv")
 
     def get_countries(self):
         countries =  self.presets.keys()#self.df.countriesAndTerritories.unique()
