@@ -3,7 +3,7 @@ import copy
 from collections import OrderedDict
 import dash_core_components as dcc
 import dash_html_components as html
-from maps import Maps
+from population_manager import Maps, Counters
 
 class InteractiveSimParam():
     def __init__(self, id, min, max, step, default_value, type = "slider", category = None, **kwargs):
@@ -60,12 +60,14 @@ class Simulation():
 
     def __init__(self):
         print("created simulation")
-        self.initial_contamination = 100
+        self.initial_contamination = 30
         self.illness_duration = 10
         self.incubation_duration = 3
-        self.day_of_diagnosis = InteractiveSimParam('Day of Diagnosis after infection', 1, 10, 1, 7)
+        self.mode = 'counters'
+        self.fraction_missed_cases_normal = InteractiveSimParam("Fraction of undiagnosed infections before intensive testing", 0 , 1, 0.01, 0.4)
+        self.day_of_diagnosis = InteractiveSimParam('Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)', 0, self.illness_duration-self.incubation_duration-1, 1, 3)
         self.sim_days = InteractiveSimParam('Simulation duration (days)', 1 , 365, 1, 100, category = 'Simulation parameters')
-        self.population = InteractiveSimParam('Population Simulated', 10, 1000000, 1, 150000, category = 'Simulation parameters')
+        self.total_population = InteractiveSimParam('Population Simulated', 10, 1e9, 1, 60e6, category = 'Simulation parameters')
         self.R0 = InteractiveSimParam('R0: With no changes to behavior, how many people will one infected person infect', 0 , 10 , 0.01,4)
         self.death_rate = InteractiveSimParam('Death Rate',0,0.1,0.001,0.01)
 
@@ -74,7 +76,7 @@ class Simulation():
 
         self.intensive_testing_window = InteractiveSimParam_dayslider('Intensive testing and tracking window period (days)', 0 , 365, 1, [50, 365], type = 'rangeslider')
         self.fraction_missed_cases = InteractiveSimParam("Fraction of undiagnosed infections in spite of intensive testing", 0 , 1, 0.01, 0.03)
-        self.day_of_testing = InteractiveSimParam("Days during which someone is infected and can spread the disease before they are tested and quarantined", 1 , self.illness_duration, 1, 1)
+        self.day_of_testing = InteractiveSimParam("Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)", 0 , self.illness_duration-self.incubation_duration-1, 1, 1)
 
 
         self.register_InteractiveSimParams()
@@ -90,52 +92,53 @@ class Simulation():
     def run(self):
         self.init_variables()
         self.run_algorithm()
-        print("%d kbytes" % (1e-3 * self.maps.maps[-1].size * self.maps.maps[-1].itemsize * len(self.maps.maps)))
+        # print("%d kbytes" % (1e-3 * self.population.maps[-1].size * self.population.maps[-1].itemsize * len(self.population.maps)))
 
     def init_variables(self):
         self.days = np.arange(self.sim_days.val())
-        self.maps = Maps(self.population.val(), self.days, self.incubation_duration, self.illness_duration, self.day_of_diagnosis.val())
+        if self.mode == 'maps':
+            self.population_manager = Maps(self.total_population.val(), self.days, self.incubation_duration, self.illness_duration, self.day_of_diagnosis.val())
+        if self.mode == 'counters':
+            self.population_manager = Counters(self.total_population.val(), self.days, self.incubation_duration, self.illness_duration, self.day_of_diagnosis.val())
 
 
     def run_algorithm(self):
-        self.maps.initialize_first_day(self.initial_contamination)
+        self.population_manager.initialize_first_day(self.initial_contamination, self.fraction_missed_cases_normal.val())
         for i in self.days[1:]:
             self.update_day(i)
         self.get_results()
 
     def get_results(self):
-        self.active_cases = self.maps.active
-        self.dead = self.maps.dead
-        self.recovered = self.maps.recovered
-        self.total_infected = self.maps.total_infected
-        self.diagnosed = self.maps.diagnosed
+        self.active_cases = self.population_manager.get_all_active()
+        self.dead = self.population_manager.dead
+        self.recovered = self.population_manager.recovered
+        self.total_infected = self.population_manager.total_infected
+        self.diagnosed = self.population_manager.diagnosed
+
+        print(f"active{self.active_cases}")
+        print(f"dead{self.dead}")
+        print(f"recovered{self.recovered}")
+        print(f"total_infected{self.total_infected}")
+        print(f"diagnosed{self.diagnosed}")
+
 
 
 
     def update_day(self, day, algorithm = 'random'):
 
         if algorithm == 'random':
-            self.maps.initialize_day(day)
+            self.population_manager.initialize_day(day)
 
             ## Kill people if they have reached the end of the illness and they are unlucky
-
-            folks_who_die = self.maps.get_end_of_illness_folk(day) * (self.maps.get_random_map() < self.death_rate.val())
-            # print(folks_who_die.shape)
-            self.maps.kill(day, folks_who_die)
-            self.maps.recover(day, np.logical_not(folks_who_die)* self.maps.get_end_of_illness_folk(day))
+            self.population_manager.kill_or_recover_end_of_illness(day, self.death_rate.val())
 
 
             # Figure out who gets tested and isolated
             if day> self.intensive_testing_window.val()[0] and day < self.intensive_testing_window.val()[1]:
-                folks_getting_tested = self.maps.get_folks_at_day(day, self.incubation_duration + self.day_of_testing.val())
-                folks_found_positive = folks_getting_tested * (self.maps.get_random_map() > self.fraction_missed_cases.val())
 
-                # now either kill them or cure them (technically this shouldn't be done right now but they don't participate in the sim anymore anyways)
-                dead_mask = self.maps.get_random_map() < self.death_rate.val()
-                folks_dying = folks_found_positive * dead_mask
-                folks_cured = np.logical_and(folks_found_positive , np.logical_not(dead_mask))
-                self.maps.kill(day, folks_dying)
-                self.maps.quarantine(day, folks_cured)
+                self.population_manager.test_and_isolate(day, self.day_of_testing.val(), self.fraction_missed_cases.val(), self.death_rate.val())
+            else:
+                self.population_manager.test_and_isolate(day, self.day_of_diagnosis.val(), self.fraction_missed_cases_normal.val(), self.death_rate.val())
 
             ## Figure out new contaminations
 
@@ -144,17 +147,12 @@ class Simulation():
             else:
                 Reff = self.R0.val()
 
-            total_new_contaminations = int(np.floor(Reff * self.maps.contagious[day - 1]/(self.illness_duration - self.incubation_duration)))
-            # print(f"new contam = {total_new_contaminations}")
-            frac = Reff * self.maps.contagious[day - 1]/(self.illness_duration - self.incubation_duration) - total_new_contaminations
 
-            if np.random.rand()<frac: #that small fraction did result in a death
-                total_new_contaminations +=1
-            # print(f"new contam = {total_new_contaminations}")
+            Reff_day = self.fraction_missed_cases_normal.val() *  Reff / (self.day_of_diagnosis.val()) + (1-self.fraction_missed_cases_normal.val()) * Reff / (self.illness_duration - self.incubation_duration)
 
-            self.maps.contaminate_random(day, total_new_contaminations)
+            self.population_manager.spread_disease(day, Reff_day)
 
-            self.maps.update_counters(day)
+            self.population_manager.end_day(day)
 
 
     def get_last_map(self):
