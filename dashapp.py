@@ -19,7 +19,7 @@ cache = Cache(app.server, config={
     'CACHE_DIR': 'cache-directory'
 })
 
-timeout = 5
+timeout = 3600
 base_simulation = Simulation()
 dataPlotter = DataPlotter()
 creator = AppCreator(base_simulation, dataPlotter)
