@@ -114,12 +114,12 @@ class DataPlotter():
                                 y=deaths_plot,
                                 mode='lines',
                                 line=dict(color=colorscheme.DEAD, width=2, dash='dashdot'),
-                                name=f'Deaths, (real data for {country})')
+                                name=f' Total Deaths, (real data for {country})')
         diagnosed_cases_fig = go.Scatter(x=days_plot,
                                          y=accumulated_cases_plot,
                                          mode='lines',
                                          line=dict(color=colorscheme.DIAGNOSED, width=2, dash='dashdot'),
-                                        name=f'Diagnosed Cases, (real data for {country})')
+                                        name=f'Total Diagnosed, (real data for {country})')
         return diagnosed_cases_fig, deaths_fig
 
     def create_differential_scatter(self,diagnosed_sim,  match_offset_days, country = 'United_States_of_America'):

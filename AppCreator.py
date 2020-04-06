@@ -238,7 +238,7 @@ class AppCreator():
                                  y=self.simulation.dead,  # self.simulation.active_cases,
                                  mode='lines',
                                  line=dict(color=colorscheme.DEAD,width = 2),
-                                 name="Dead (Simulation)",
+                                 name="Total Deaths (Simulation)",
                                  ))
         diagnosed_cases_fig_real , deaths_fig_real = self.dataPlotter.create_scatter( diagnosed_sim = self.simulation.diagnosed, match_offset_days =  10, country = country)
 
@@ -327,17 +327,6 @@ class AppCreator():
             line=dict(color=colorscheme.INFECTED, width=2, ),
         ))
 
-        fig.add_trace(go.Scatter(x=self.simulation.days[1:],
-                                 y=np.diff(self.simulation.dead),  # self.simulation.active_cases,
-                                 # mode='markers',
-                                 name="New deaths per day",
-                                 marker_symbol='circle-open',
-                                 marker_line_width=2,
-                                 marker_color=colorscheme.DEAD,
-                                 mode='lines',
-                                 line=dict(color=colorscheme.DEAD, width=2, ),
-                                 ))
-
         fig.add_trace(go.Scatter(
             x=self.simulation.days[1:],
             y=np.diff(self.simulation.diagnosed),
@@ -349,6 +338,18 @@ class AppCreator():
             mode='lines',
             line=dict(color=colorscheme.DIAGNOSED, width=2, ),
         ))
+
+        fig.add_trace(go.Scatter(x=self.simulation.days[1:],
+                                 y=np.diff(self.simulation.dead),  # self.simulation.active_cases,
+                                 # mode='markers',
+                                 name="New deaths per day",
+                                 marker_symbol='circle-open',
+                                 marker_line_width=2,
+                                 marker_color=colorscheme.DEAD,
+                                 mode='lines',
+                                 line=dict(color=colorscheme.DEAD, width=2, ),
+                                 ))
+
 
         diagnosed_cases_fig_real , deaths_fig_real = self.dataPlotter.create_differential_scatter( diagnosed_sim = self.simulation.diagnosed, match_offset_days = 10, country = country)
 
