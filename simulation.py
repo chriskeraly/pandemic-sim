@@ -23,27 +23,46 @@ class InteractiveSimParam():
         return copy.deepcopy(self.value)
 
     def get_widget(self):
-        if self.type == 'slider':
 
+        if self.type == 'slider':
+            if self.step == 1:
+
+                marks = {int(val): '{:.0f}'.format(int(val / self.step) * self.step) for val in
+                         np.linspace(self.min, self.max, 7)}
+            else:
+                marks = {val: '{:.02f}'.format(int(val / self.step) * self.step) for val in
+                         np.linspace(self.min, self.max, 7)}
+            if self.id == 'Population Simulated':
+                marks = {int(val): '{:.0E}'.format(int(val / self.step) * self.step) for val in
+                         np.linspace(self.min, self.max, 7)}
+            # print(f"{self.id} marks {marks}")
             return dcc.Slider(id=self.id,
                        min=self.min,
                        max=self.max,
                        step=self.step,
                        value=self.default_value,
-                       marks = {val:'{:.2f}'.format(val) for val in np.linspace(self.min,self.max,10)},
+                       marks = marks,
                        **self.kwargs)
         if self.type == 'rangeslider':
+            if self.step == 1:
+
+                marks = {int(val): '{:.0f}'.format(int(val / self.step) * self.step) for val in
+                         np.linspace(self.min, self.max, 20)}
+            else:
+                marks = {val: '{:.02f}'.format(int(val / self.step) * self.step) for val in
+                         np.linspace(self.min, self.max, 20)}
+            # print(f"{self.id} marks {marks}")
             return dcc.RangeSlider(id=self.id,
                        min=self.min,
                        max=self.max,
                        step=self.step,
                        value=self.default_value,
-                    marks = {val:'{:.2f}'.format(val) for val in np.linspace(self.min,self.max,10)},
+                       marks = marks,# {val:'{:.0f}'.format(int(val/self.step) * self.step) for val in np.linspace(self.min,self.max,5)},
                                    )
 
     def get_widget_with_labels(self):
         widget = []
-        widget.append(html.H6(self.id))
+        widget.append(html.P(self.id))
         widget.append(self.get_widget())
         widget.append(html.Div(id=self.id + '_selected_value'))
         return widget
@@ -115,11 +134,30 @@ class Simulation():
         self.total_infected = self.population_manager.total_infected
         self.diagnosed = self.population_manager.diagnosed
 
-        print(f"active{self.active_cases}")
-        print(f"dead{self.dead}")
-        print(f"recovered{self.recovered}")
-        print(f"total_infected{self.total_infected}")
-        print(f"diagnosed{self.diagnosed}")
+        self.do_averaging()
+        # print(f"active{self.active_cases}")
+        # print(f"dead{self.dead}")
+        # print(f"recovered{self.recovered}")
+        # print(f"total_infected{self.total_infected}")
+        # print(f"diagnosed{self.diagnosed}")
+
+    def do_averaging(self):
+        '''this is a bit of a hack to get smoother plots due to some artifacts in the simulation I don't have the courage to track down right now'''
+
+        def running_mean(x, N):
+            cumsum = np.cumsum(np.insert(x, 0, 0))
+            temp = list((cumsum[N:] - cumsum[:-N]) / float(N))
+            for i in range(N-1):
+                temp.append(temp[-1])
+            return np.array(temp)
+
+        N = 3
+
+        self.active_cases = running_mean(self.active_cases, N)
+        self.dead = running_mean(self.dead,N)
+        self.recovered = running_mean(self.recovered,N)
+        self.total_infected = running_mean(self.total_infected,N)
+        self.diagnosed = running_mean(self.diagnosed,N)
 
 
 

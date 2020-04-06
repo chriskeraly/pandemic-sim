@@ -5,10 +5,9 @@ import plotly.graph_objects as go
 
 import numpy as np
 from simulation import  InteractiveSimParam_dayslider
-from dataPlotter import DataPlotter
+import colorscheme
 
-# img_rgb = [[[255, 0, 0], [0, 255, 0], [0, 0, 255]],
-#            [[0, 255, 0], [0, 0, 255], [255, 0, 0]]]
+
 class AppCreator():
 
     def __init__(self,simulation, dataPlotter):
@@ -16,24 +15,41 @@ class AppCreator():
         self.dataPlotter = dataPlotter
 
     def create_app_layout(self):
-        title = [html.H1("COVID-19 Epidemic simulator")]
-        note = [html.H5("An extremely simple epidemic calculator to look at trends and compare countries")]
+        title = [html.Div(html.H1("COVID-19 Epidemic simulator", style = {"text-align":"center"}), className= "row")]
+        note = [html.Div(html.H5("An extremely simple epidemic calculator to look at trends and compare countries", style = {"text-align":"center"}), className="row")]
+        line = [html.Div(html.Div(html.Hr(style={"margin-top": "50px","margin-bottom": "0px"})),className='row')]
         sliders_top, sliders_bottom = self.get_sliders()
         # map_graph, line_plot = self.get_graphs()
-        line_plot = self.get_graphs()
         country_selector = self.get_country_selector()
 
-        html_div_list = title + note + sliders_top + sliders_bottom + country_selector + line_plot  #+ map_graph
-        return html_div_list
+        line_plot = self.get_graphs()
+        html_div_list_interact = sliders_top + sliders_bottom + country_selector
+        thick_line = [html.Div(html.Div(html.Hr(style={"margin-top": "10px","margin-bottom": "10px"})),className='row')]
+
+        html_div_list_results =   line_plot  #+ map_graph
+
+        layout = html.Div([
+            html.Div(title + note +  line, className = 'row'),
+            html.Div([
+                html.Div(html_div_list_interact, className = 'six columns'),
+                html.Div(html_div_list_results, className = 'six columns')],
+                className= 'row'),
+            ]
+            ,style = {'margin':'5%'})
+        return layout
 
     def get_graphs(self):
-        # return [html.H2("Animation of virus spread with time"),dcc.Graph(id='map graph')], [html.H2("Simulation results" ),dcc.Graph(id="line plot")]
-        return [html.H2("Simulation results" ),dcc.Graph(id="line plot"), dcc.Graph(id = 'differential line plot')]
+        # return [html.H3("Animation of virus spread with time"),dcc.Graph(id='map graph')], [html.H3("Simulation results" ),dcc.Graph(id="line plot")]
+        layout = [html.H3("Simulation results" , className= 'row'),
+                  dcc.Graph(id="line plot", className= 'row'),
+                  dcc.Graph(id = 'differential line plot', className= 'row')]
+        return layout
 
     def get_country_selector(self):
         countries = self.dataPlotter.get_countries()
         options = [{'label': country, 'value': country} for country in countries]
-        return [html.Div([html.H2("Country real data overlay"),
+        return [html.Div([html.Div(html.Hr( style={"margin-top": "0px","margin-bottom": "0px"}),className='row'),
+                          html.H3("Country real data overlay"),
             dcc.Dropdown(
                 id = 'country selector',
                 options = options,
@@ -43,43 +59,57 @@ class AppCreator():
         ])]
 
     def get_sliders(self):
-        sliders_sim_params = [html.Div(html.H2("Simulation Parameters"))]
-
-        sliders_sim_params.append(html.Div(self.simulation.sim_days.get_widget_with_labels(), style={'width': '48%', 'display': 'inline-block'}))
-        sliders_sim_params.append(html.Div(self.simulation.total_population.get_widget_with_labels(), style={'width': '48%', 'float': 'right', 'display': 'inline-block'}))
-
-
-
-        sliders_epidemic_params = [html.Div(html.H2("Viral Parameters"))]
-        sliders_epidemic_params.append(html.Div(self.simulation.R0.get_widget_with_labels(),
-                                           style={'width': '48%', 'display': 'inline-block'}))
-        sliders_epidemic_params.append(html.Div(self.simulation.death_rate.get_widget_with_labels(),
-                                           style={'width': '48%', 'float': 'right', 'display': 'inline-block'}))
+        sliders_sim_params = [#html.Div(html.Div(html.Hr(style={"margin-top": "0px","margin-bottom": "0px"})),className='row'),
+                              html.Div(html.H3("Simulation Parameters", className= 'ten columns offset by one'), className = 'row'),
+                              html.Div([
+                                  html.Div(self.simulation.sim_days.get_widget_with_labels(), className='six columns'),
+                                  html.Div(self.simulation.total_population.get_widget_with_labels(), className='six columns')],
+                                  className='row'
+                              )]
 
 
 
-        sliders_normal_testing_params = [html.Div(html.H2("Normal testing regime Parameters"))]
-        sliders_normal_testing_params.append(html.Div(self.simulation.day_of_diagnosis.get_widget_with_labels(), style={'width': '48%', 'display': 'inline-block'}))
-        sliders_normal_testing_params.append(html.Div(self.simulation.fraction_missed_cases_normal.get_widget_with_labels(), style={'width': '48%', 'float': 'right', 'display': 'inline-block'}))
-        sliders_top = [html.Div(sliders_sim_params + sliders_epidemic_params)]
+        sliders_epidemic_params = [html.Div(html.Hr( style={"margin-top": "0px","margin-bottom": "0px"}),className='row'),
+                                   html.Div(html.H3("Viral Parameters", className= 'ten columns offset by one'), className = 'row'),
+                                   html.Div(
+                                       [html.Div(self.simulation.R0.get_widget_with_labels(), className='six columns'),
+                                        html.Div(html.Div(self.simulation.death_rate.get_widget_with_labels(), style ={ 'vertical-align':'bottom'}), className='six columns')],
+                                       className='row'
+                                   )]
 
-        sliders_social_isolation = []
-        sliders_social_isolation.append(html.Div(html.H2("Social Isolation parameters"),style={'width': '48%', 'display': 'inline-block'}))
-        sliders_social_isolation.append(html.Div(self.simulation.social_isolation_level.get_widget_with_labels(), style={'width': '48%', 'float': 'right', 'display': 'inline-block'}))
-        sliders_social_isolation.append(html.Div(self.simulation.social_isolation_window.get_widget_with_labels()))
+        sliders_normal_testing_params = [html.Div(html.Hr(style={"margin-top": "0px","margin-bottom": "0px"}),className='row'),
+                                         html.Div(html.H3("Normal testing regime Parameters",className= 'twelve columns'), className='row'),
+                                         html.Div(
+                                             [html.Div(self.simulation.day_of_diagnosis.get_widget_with_labels(),
+                                                       className='six columns'),
+                                              html.Div(self.simulation.fraction_missed_cases_normal.get_widget_with_labels(),
+                                                       className='six columns', style ={ 'vertical-align':'bottom'})],
+                                             className='row'
+                                         )]
 
-        sliders_intensive_testing = []
+        sliders_intensive_testing = [html.Div(html.Hr(style={"margin-top": "0px","margin-bottom": "0px"}),className='row'),
+                                     html.Div(html.H3("Intensive testing regime Parameters", className= 'twelve columns'), className='row'),
+                                         html.Div(
+                                             [html.Div(self.simulation.day_of_testing.get_widget_with_labels(),
+                                                       className='six columns'),
+                                              html.Div(self.simulation.fraction_missed_cases.get_widget_with_labels(),
+                                                       className='six columns', style ={ 'vertical-align':'bottom'})],
+                                             className='row'
+                                         ),
+                                        html.Div(self.simulation.intensive_testing_window.get_widget_with_labels(), className= 'row')]
+
+        sliders_social_isolation = [html.Div(html.Hr(style={"margin-top": "0px","margin-bottom": "0px"}),className='row'),
+                                    html.Div(
+                                        [html.H3("Social Isolation Parameters", className= 'six columns'),
+                                        html.Div(self.simulation.social_isolation_level.get_widget_with_labels(), className= 'six columns' )] ,
+                                        className = 'row'),
+                                    html.Div(self.simulation.social_isolation_window.get_widget_with_labels(), className= 'row')]
 
 
 
-        sliders_intensive_testing.append(html.Div(html.H2("Intensive Testing parameters")))
-        sliders_intensive_testing.append(html.Div(self.simulation.day_of_testing.get_widget_with_labels(),
-                                           style={'width': '48%', 'display': 'inline-block'}))
-        sliders_intensive_testing.append(html.Div(self.simulation.fraction_missed_cases.get_widget_with_labels(),
-                                           style={'width': '48%', 'float': 'right', 'display': 'inline-block'}))
-        sliders_intensive_testing.append(html.Div(self.simulation.intensive_testing_window.get_widget_with_labels()))
+        sliders_top =sliders_sim_params + sliders_epidemic_params
 
-        sliders_bottom = [html.Div(sliders_social_isolation  + sliders_normal_testing_params + sliders_intensive_testing )]
+        sliders_bottom = [html.Div( sliders_normal_testing_params + sliders_intensive_testing +sliders_social_isolation )]
 
         return sliders_top , sliders_bottom
 
@@ -152,7 +182,7 @@ class AppCreator():
             y1 = 5*self.simulation.total_population.val(),
             fillcolor="LightSalmon",
             line_width = 0,
-            opacity=0.5,
+            opacity=0.2,
             layer="below"
         )
 
@@ -164,108 +194,160 @@ class AppCreator():
             y1 = 5*self.simulation.total_population.val(),
             fillcolor="LightSkyBlue",
             line_width = 0,
-            opacity=0.5,
+            opacity=0.2,
             layer="below"
         )
 
         fig.add_trace(go.Scatter(
             x=[np.mean([self.simulation.social_isolation_window.val()[0],np.min([self.simulation.social_isolation_window.val()[1],self.simulation.sim_days.val()])]),
                np.mean([self.simulation.intensive_testing_window.val()[0],np.min([self.simulation.intensive_testing_window.val()[1],self.simulation.sim_days.val()])])],
-            y=[self.simulation.total_population.val()/2, self.simulation.total_population.val()*2],
+            # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
+            y = [20,20],
             text=["Social Isolation Window",
                   "Intensive testing Window"],
             mode="text",
+            showlegend=False
         ))
 
-        fig.add_trace(go.Scatter(x=self.simulation.days,
-                                 y=self.simulation.dead,  # self.simulation.active_cases,
-                                 mode='markers',
-                                 name="Dead",
-                                 ))
-        fig.add_trace(go.Scatter(
-            x=self.simulation.days,
-            y=self.simulation.active_cases,
-            mode='markers',
-            name='Active cases',
-        ))
+
         fig.add_trace(go.Scatter(
             x=self.simulation.days,
             y=self.simulation.total_infected,
-            mode='markers',
-            name='Total Infected',
+            mode='lines',
+            line=dict(color=colorscheme.INFECTED, width=2),
+            name='Total Infected (Simulation)',
         ))
 
         fig.add_trace(go.Scatter(
             x=self.simulation.days,
             y=self.simulation.diagnosed,
-            mode='markers',
-            name='Total Diagnosed',
+            mode='lines',
+            line=dict(color=colorscheme.DIAGNOSED, width=2,),
+            name='Total Diagnosed (Simulation)',
         ))
 
+        # fig.add_trace(go.Scatter(
+        #     x=self.simulation.days,
+        #     y=self.simulation.active_cases,
+        #     mode='lines',
+        #     name='Active cases (Simulation)',
+        #     line=dict(color=colorscheme.ACTIVE_CASES, width=2, ),
+        # ))
+
+        fig.add_trace(go.Scatter(x=self.simulation.days,
+                                 y=self.simulation.dead,  # self.simulation.active_cases,
+                                 mode='lines',
+                                 line=dict(color=colorscheme.DEAD,width = 2),
+                                 name="Dead (Simulation)",
+                                 ))
         diagnosed_cases_fig_real , deaths_fig_real = self.dataPlotter.create_scatter( diagnosed_sim = self.simulation.diagnosed, match_offset_days =  10, country = country)
 
         fig.add_trace(diagnosed_cases_fig_real)
         fig.add_trace(deaths_fig_real)
 
-        fig.update_yaxes(type="log", title="individuals",
-                         range=[np.log10(1), np.log10(5*self.simulation.total_population.val())])
-        fig.update_xaxes(title="days", range=[0, self.simulation.sim_days.val()])
+
+
+        fig.update_yaxes(type="log", title="Individuals",
+                         range=[np.log10(1),
+                                np.log10(5*self.simulation.total_population.val())],
+                         tickvals=[10,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9],
+                         showline = True,
+                         linewidth=2,
+                         linecolor='black',
+                         gridcolor='black')
+        fig.update_layout(
+            # autosize = False,
+            # width = 1200,
+            height = 600,
+            # legend = {'xanchor': "center",'yanchor': "top"},
+            legend = {'orientation' : 'h', 'x':-0.1, 'y':1.3},
+            paper_bgcolor= '#FFFFFF',
+            template = 'none',#'plotly_white'
+            font=dict(
+                family="Avenir",
+                size=16,
+                color="#1f1f1f"
+            )
+        )
+        fig.update_xaxes(title="Days",
+                         range=[0, self.simulation.sim_days.val()],
+                         showline = True,linewidth=2, linecolor='black',
+                         showgrid = False)
         return [fig]
+
+
+
 
     def create_differential_time_series_output(self, country):
 
         fig = go.Figure()
         fig.add_shape(
-            type = "rect",
-            x0 = self.simulation.social_isolation_window.val()[0],
-            x1 = np.min([self.simulation.social_isolation_window.val()[1],self.simulation.sim_days.val()]),
-            y0 = 1,
-            y1 = 5*self.simulation.total_population.val(),
+            type="rect",
+            x0=self.simulation.social_isolation_window.val()[0],
+            x1=np.min([self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()]),
+            y0=1,
+            y1=5 * self.simulation.total_population.val(),
             fillcolor="LightSalmon",
-            line_width = 0,
-            opacity=0.5,
+            line_width=0,
+            opacity=0.2,
             layer="below"
         )
 
         fig.add_shape(
-            type = "rect",
-            x0 = self.simulation.intensive_testing_window.val()[0],
-            x1 =  np.min([self.simulation.intensive_testing_window.val()[1],self.simulation.sim_days.val()]),
-            y0 = 1,
-            y1 = 5*self.simulation.total_population.val(),
+            type="rect",
+            x0=self.simulation.intensive_testing_window.val()[0],
+            x1=np.min([self.simulation.intensive_testing_window.val()[1], self.simulation.sim_days.val()]),
+            y0=1,
+            y1=5 * self.simulation.total_population.val(),
             fillcolor="LightSkyBlue",
-            line_width = 0,
-            opacity=0.5,
+            line_width=0,
+            opacity=0.2,
             layer="below"
         )
 
         fig.add_trace(go.Scatter(
             x=[np.mean([self.simulation.social_isolation_window.val()[0],np.min([self.simulation.social_isolation_window.val()[1],self.simulation.sim_days.val()])]),
                np.mean([self.simulation.intensive_testing_window.val()[0],np.min([self.simulation.intensive_testing_window.val()[1],self.simulation.sim_days.val()])])],
-            y=[self.simulation.total_population.val()/2, self.simulation.total_population.val()*2],
+            y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
             text=["Social Isolation Window",
                   "Intensive testing Window"],
             mode="text",
+            showlegend=False
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=self.simulation.days[1:],
+            y=np.diff(self.simulation.total_infected),
+            # mode='markers',
+            name='New infections per day (Simulation)',
+            marker_symbol='circle-open',
+            marker_line_width=2,
+            marker_color=colorscheme.INFECTED,
+            mode='lines',
+            line=dict(color=colorscheme.INFECTED, width=2, ),
         ))
 
         fig.add_trace(go.Scatter(x=self.simulation.days[1:],
                                  y=np.diff(self.simulation.dead),  # self.simulation.active_cases,
-                                 mode='markers',
+                                 # mode='markers',
                                  name="New deaths per day",
+                                 marker_symbol='circle-open',
+                                 marker_line_width=2,
+                                 marker_color=colorscheme.DEAD,
+                                 mode='lines',
+                                 line=dict(color=colorscheme.DEAD, width=2, ),
                                  ))
-
-        # fig.add_trace(go.Scatter(
-        #     x=self.simulation.days[1:],
-        #     y=np.diff(self.simulation.total_infected),
-        #     mode='markers',
-        #     name='New infections per day',
-        # ))
 
         fig.add_trace(go.Scatter(
             x=self.simulation.days[1:],
             y=np.diff(self.simulation.diagnosed),
-            mode='markers',
+            # mode='markers',
             name='New Diagnosed cases per day',
+            marker_symbol='circle-open',
+            marker_line_width=2,
+            marker_color=colorscheme.DIAGNOSED,
+            mode='lines',
+            line=dict(color=colorscheme.DIAGNOSED, width=2, ),
         ))
 
         diagnosed_cases_fig_real , deaths_fig_real = self.dataPlotter.create_differential_scatter( diagnosed_sim = self.simulation.diagnosed, match_offset_days = 10, country = country)
@@ -273,9 +355,34 @@ class AppCreator():
         fig.add_trace(diagnosed_cases_fig_real)
         fig.add_trace(deaths_fig_real)
 
-        fig.update_yaxes(type="log", title="individuals",
-                         range=[np.log10(1), np.log10(5*self.simulation.total_population.val())])
-        fig.update_xaxes(title="days", range=[0, self.simulation.sim_days.val()])
+        # fig.update_yaxes(type="log", title="individuals",
+        #                  range=[np.log10(10), np.log10(5*self.simulation.total_population.val())])
+        # fig.update_xaxes(title="days", range=[0, self.simulation.sim_days.val()])
+
+        fig.update_yaxes(type="log", title="Individuals",
+                         range=[np.log10(1),
+                                np.log10(5 * self.simulation.total_population.val())],
+                         tickvals=[10, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9],
+                         showline=True, linewidth=2, linecolor='black',
+                         gridcolor='black')
+        fig.update_layout(
+            # autosize = False,
+            # width = 1200,
+            height = 600,
+            # legend = {'xanchor': "center",'yanchor': "top"},
+            legend={'orientation': 'h', 'x': -0.1, 'y': 1.3},
+            paper_bgcolor='#FFFFFF',
+            template='none',  # 'plotly_white'
+            font = dict(
+                family="Avenir",
+                size=16,
+                color="#1f1f1f"
+            )
+        )
+        fig.update_xaxes(title="Days",
+                         range=[0, self.simulation.sim_days.val()],
+                         showline=True, linewidth=2, linecolor='black',
+                         showgrid=False)
         return [fig]
 
 
