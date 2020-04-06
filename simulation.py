@@ -83,7 +83,7 @@ class Simulation():
         self.illness_duration = 10
         self.incubation_duration = 3
         self.mode = 'counters'
-        self.fraction_missed_cases_normal = InteractiveSimParam("Fraction of undiagnosed infections in normal testing regime", 0 , 1, 0.01, 0.4)
+        self.fraction_missed_cases_normal = InteractiveSimParam("Fraction of undiagnosed infections in normal testing regime", 0 , 0.95, 0.01, 0.4)
         self.day_of_diagnosis = InteractiveSimParam('Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)', 0, self.illness_duration-self.incubation_duration-1, 1, 3)
         self.sim_days = InteractiveSimParam('Simulation duration (days)', 1 , 365, 1, 100, category = 'Simulation parameters')
         self.total_population = InteractiveSimParam('Population Simulated', 10, 1e9, 1, 60e6, category = 'Simulation parameters')
@@ -94,7 +94,7 @@ class Simulation():
         self.social_isolation_level = InteractiveSimParam("Fraction of social contact reduction during social isolation", 0 , 1, 0.01, 0.8)
 
         self.intensive_testing_window = InteractiveSimParam_dayslider('Intensive testing and tracking window period (days)', 0 , 365, 1, [50, 365], type = 'rangeslider')
-        self.fraction_missed_cases = InteractiveSimParam("Fraction of undiagnosed infections in spite of intensive testing", 0 , 1, 0.01, 0.03)
+        self.fraction_missed_cases = InteractiveSimParam("Fraction of undiagnosed infections in spite of intensive testing", 0 , 0.95, 0.01, 0.03)
         self.day_of_testing = InteractiveSimParam("Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)", 0 , self.illness_duration-self.incubation_duration-1, 1, 1)
 
 

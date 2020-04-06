@@ -142,9 +142,11 @@ class AppCreator():
 
     def create_preset_button_callback_output(self, country):
         outputs = []
-        if country in self.dataPlotter.presets.keys():
-            for k,isp in self.simulation.InteractiveSimParams.items():
-                outputs.append(self.dataPlotter.presets[country][isp.id])
+        if not country in self.dataPlotter.presets.keys():
+            country = 'NO PRESET FOR COUNTRIES BELLOW THIS LINE'
+        for k,isp in self.simulation.InteractiveSimParams.items():
+            outputs.append(self.dataPlotter.presets[country][isp.id])
+        print(f"Outputs = {outputs}")
         return tuple(outputs)
 
     def get_preset_button_inputs(self):

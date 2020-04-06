@@ -73,6 +73,19 @@ class DataPlotter():
                     'Fraction of undiagnosed infections in spite of intensive testing': 0.1,
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 1
                     },
+               'NO PRESET FOR COUNTRIES BELLOW THIS LINE':
+                   {'Fraction of undiagnosed infections in normal testing regime': 0.65,
+                    'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
+                    'Simulation duration (days)': 100,
+                    'Population Simulated': 1500000,
+                    'R0: With no changes to behavior, how many people will one infected person infect': 5.3,
+                    'Death Rate': 0.02,
+                    'Social Isolation window period (days)': [18, 70],
+                    'Intensive testing and tracking window period (days)': [62, 365],
+                    "Fraction of social contact reduction during social isolation": 0.9,
+                    'Fraction of undiagnosed infections in spite of intensive testing': 0.05,
+                    "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 1
+                    },
                }
 
     def __init__(self):
@@ -83,9 +96,15 @@ class DataPlotter():
         return read_csv("data/covid-19-cases-april-4-2020.csv")
 
     def get_countries(self):
-        countries =  self.presets.keys()#self.df.countriesAndTerritories.unique()
+        preset_countries =  list(self.presets.keys())
 
-        return countries
+        all_countries = list(self.df.countriesAndTerritories.unique())  + ['NO PRESET FOR COUNTRIES BELLOW THIS LINE']
+        for country in preset_countries:
+            all_countries.remove(country)
+
+
+        return preset_countries + all_countries
+
 
     def create_scatter(self,diagnosed_sim,  match_offset_days, country = 'United_States_of_America'):
         cases_thresh = diagnosed_sim[match_offset_days]
