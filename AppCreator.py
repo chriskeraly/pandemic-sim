@@ -99,9 +99,9 @@ class AppCreator():
                                         html.Div(self.simulation.intensive_testing_window.get_widget_with_labels(), className= 'row')]
 
         sliders_social_isolation = [html.Div(html.Hr(style={"margin-top": "0px","margin-bottom": "0px"}),className='row'),
+                                    html.Div(html.H3("Social Isolation Parameters", className= 'twelve columns'),className='row'),
                                     html.Div(
-                                        [html.H3("Social Isolation Parameters", className= 'six columns'),
-                                        html.Div(self.simulation.social_isolation_level.get_widget_with_labels(), className= 'six columns' )] ,
+                                        [html.Div(self.simulation.social_isolation_level.get_widget_with_labels(), className= 'six columns' )] ,
                                         className = 'row'),
                                     html.Div(self.simulation.social_isolation_window.get_widget_with_labels(), className= 'row')]
 

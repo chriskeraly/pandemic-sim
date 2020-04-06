@@ -9,7 +9,7 @@ import numpy as np
 
 class DataPlotter():
     presets = {'China':
-                   {'Fraction of undiagnosed infections before intensive testing': 0.65,
+                   {'Fraction of undiagnosed infections in normal testing regime': 0.65,
                     'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
                     'Simulation duration (days)': 100,
                     'Population Simulated': 1500000,
@@ -22,7 +22,7 @@ class DataPlotter():
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 1
                     },
                'United_States_of_America':
-                   {'Fraction of undiagnosed infections before intensive testing': 0.65,
+                   {'Fraction of undiagnosed infections in normal testing regime': 0.65,
                     'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
                     'Simulation duration (days)': 100,
                     'Population Simulated': 200e6,
@@ -35,7 +35,7 @@ class DataPlotter():
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 0
                     },
                'Italy':
-                   {'Fraction of undiagnosed infections before intensive testing': 0.65,
+                   {'Fraction of undiagnosed infections in normal testing regime': 0.65,
                     'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
                     'Simulation duration (days)': 100,
                     'Population Simulated': 200e6,
@@ -48,7 +48,7 @@ class DataPlotter():
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 0
                     },
                'South_Korea':
-                   {'Fraction of undiagnosed infections before intensive testing': 0.65,
+                   {'Fraction of undiagnosed infections in normal testing regime': 0.65,
                     'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
                     'Simulation duration (days)': 100,
                     'Population Simulated': 200e6,
@@ -61,7 +61,7 @@ class DataPlotter():
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 0
                     },
                'Singapore':
-                   {'Fraction of undiagnosed infections before intensive testing': 0.65,
+                   {'Fraction of undiagnosed infections in normal testing regime': 0.65,
                     'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
                     'Simulation duration (days)': 100,
                     'Population Simulated': 200e6,
@@ -114,12 +114,12 @@ class DataPlotter():
                                 y=deaths_plot,
                                 mode='lines',
                                 line=dict(color=colorscheme.DEAD, width=2, dash='dashdot'),
-                                name=f' Total Deaths, (real data for {country})')
+                                name=f' Total Deaths (real data for {country})')
         diagnosed_cases_fig = go.Scatter(x=days_plot,
                                          y=accumulated_cases_plot,
                                          mode='lines',
                                          line=dict(color=colorscheme.DIAGNOSED, width=2, dash='dashdot'),
-                                        name=f'Total Diagnosed, (real data for {country})')
+                                        name=f'Total Diagnosed (real data for {country})')
         return diagnosed_cases_fig, deaths_fig
 
     def create_differential_scatter(self,diagnosed_sim,  match_offset_days, country = 'United_States_of_America'):
@@ -151,14 +151,14 @@ class DataPlotter():
                                 marker_symbol='x-thin',
                                 marker_line_width=2,
                                 marker_line_color=colorscheme.DEAD,
-                                name=f'New Deaths, (real data for {country})')
+                                name=f'New Deaths (real data for {country})')
         diagnosed_cases_fig = go.Scatter(x=days_plot[1:],
                                          y=np.diff(accumulated_cases_plot),
                                          mode='markers',
                                          marker_symbol='x-thin',
                                          marker_line_width=2,
                                          marker_line_color=colorscheme.DIAGNOSED,
-                                         name=f'Diagnosed Cases, (real data for {country})')
+                                         name=f'New Diagnosed Cases (real data for {country})')
         return diagnosed_cases_fig, deaths_fig
 
 
