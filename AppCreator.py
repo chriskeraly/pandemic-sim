@@ -16,7 +16,7 @@ class AppCreator():
 
     def create_app_layout(self):
         title = [html.Div(html.H1("COVID-19 Epidemic simulator", style = {"text-align":"center"}), className= "row")]
-        note = [html.Div(html.H5("An extremely simple epidemic calculator to look at trends and compare countries", style = {"text-align":"center"}), className="row")]
+        note = [html.Div(html.H5("An extremely simple epidemic simulator to look at trends and compare countries", style = {"text-align":"center"}), className="row")]
         line = [html.Div(html.Div(html.Hr(style={"margin-top": "50px","margin-bottom": "0px"})),className='row')]
         sliders_top, sliders_bottom = self.get_sliders()
         # map_graph, line_plot = self.get_graphs()
@@ -254,7 +254,7 @@ class AppCreator():
                          showline = True,
                          linewidth=2,
                          linecolor='black',
-                         gridcolor='black')
+                         gridcolor='#8e9aaf')
         fig.update_layout(
             # autosize = False,
             # width = 1200,
@@ -364,7 +364,7 @@ class AppCreator():
                                 np.log10(5 * self.simulation.total_population.val())],
                          tickvals=[10, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9],
                          showline=True, linewidth=2, linecolor='black',
-                         gridcolor='black')
+                         gridcolor='#8e9aaf')
         fig.update_layout(
             # autosize = False,
             # width = 1200,
