@@ -235,8 +235,11 @@ class DataPlotter():
         above_thresh[:-match_offset_days] = above_thresh[match_offset_days:]
 
         deaths_plot = deaths[above_thresh]
+        print(type(days))
+        days_plot = np.array(days)[above_thresh]
+
         accumulated_cases_plot = accumulated_cases[above_thresh]
-        days_plot = np.arange(len(deaths_plot))
+        # days_plot = np.arange(len(deaths_plot))
         # print(country)
         deaths_fig = go.Scatter(x=days_plot[1:],
                                 y=np.diff(deaths_plot),

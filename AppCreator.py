@@ -369,91 +369,91 @@ class AppCreator():
     def create_differential_time_series_output(self, country):
 
         fig = go.Figure()
-        fig.add_shape(
-            type="rect",
-            x0=self.simulation.social_isolation_window.val()[0],
-            x1=np.min([self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()]),
-            y0=1,
-            y1=5 * self.simulation.total_population.val(),
-            fillcolor="LightSalmon",
-            line_width=0,
-            opacity=0.2,
-            layer="below"
-        )
+        # fig.add_shape(
+        #     type="rect",
+        #     x0=self.simulation.social_isolation_window.val()[0],
+        #     x1=np.min([self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()]),
+        #     y0=1,
+        #     y1=5 * self.simulation.total_population.val(),
+        #     fillcolor="LightSalmon",
+        #     line_width=0,
+        #     opacity=0.2,
+        #     layer="below"
+        # )
+        #
+        # fig.add_shape(
+        #     type="rect",
+        #     x0=self.simulation.intensive_testing_window.val()[0],
+        #     x1=np.min([self.simulation.intensive_testing_window.val()[1], self.simulation.sim_days.val()]),
+        #     y0=1,
+        #     y1=5 * self.simulation.total_population.val(),
+        #     fillcolor="LightSkyBlue",
+        #     line_width=0,
+        #     opacity=0.2,
+        #     layer="below"
+        # )
+        #
+        # if self.simulation.intensive_testing_window.val()[0] != self.simulation.intensive_testing_window.val()[1]:
+        #
+        #     fig.add_trace(go.Scatter(
+        #         x=[np.mean([self.simulation.social_isolation_window.val()[0], np.min(
+        #             [self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()])]),
+        #            np.mean([self.simulation.intensive_testing_window.val()[0], np.min(
+        #                [self.simulation.intensive_testing_window.val()[1], self.simulation.sim_days.val()])])],
+        #         # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
+        #         y=[np.floor(self.simulation.total_population.val()*2/10)*2,np.floor(self.simulation.total_population.val()*2/10)*2],
+        #         text=["Social Isolation Window",
+        #               "Intensive testing Window"],
+        #         mode="text",
+        #         showlegend=False
+        #     ))
+        # else:
+        #     print('here')
+        #     fig.add_trace(go.Scatter(
+        #         x=[np.mean([self.simulation.social_isolation_window.val()[0], np.min(
+        #             [self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()])])],
+        #         # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
+        #         y=[np.floor(self.simulation.total_population.val()*2/10)*2],
+        #         text=["Social Isolation Window"],
+        #         mode="text",
+        #         showlegend=False
+        #     ))
 
-        fig.add_shape(
-            type="rect",
-            x0=self.simulation.intensive_testing_window.val()[0],
-            x1=np.min([self.simulation.intensive_testing_window.val()[1], self.simulation.sim_days.val()]),
-            y0=1,
-            y1=5 * self.simulation.total_population.val(),
-            fillcolor="LightSkyBlue",
-            line_width=0,
-            opacity=0.2,
-            layer="below"
-        )
-
-        if self.simulation.intensive_testing_window.val()[0] != self.simulation.intensive_testing_window.val()[1]:
-
-            fig.add_trace(go.Scatter(
-                x=[np.mean([self.simulation.social_isolation_window.val()[0], np.min(
-                    [self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()])]),
-                   np.mean([self.simulation.intensive_testing_window.val()[0], np.min(
-                       [self.simulation.intensive_testing_window.val()[1], self.simulation.sim_days.val()])])],
-                # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
-                y=[np.floor(self.simulation.total_population.val()*2/10)*2,np.floor(self.simulation.total_population.val()*2/10)*2],
-                text=["Social Isolation Window",
-                      "Intensive testing Window"],
-                mode="text",
-                showlegend=False
-            ))
-        else:
-            print('here')
-            fig.add_trace(go.Scatter(
-                x=[np.mean([self.simulation.social_isolation_window.val()[0], np.min(
-                    [self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()])])],
-                # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
-                y=[np.floor(self.simulation.total_population.val()*2/10)*2],
-                text=["Social Isolation Window"],
-                mode="text",
-                showlegend=False
-            ))
-
-        fig.add_trace(go.Scatter(
-            x=self.simulation.days[1:],
-            y=np.diff(self.simulation.total_infected),
-            # mode='markers',
-            name='New infections per day (Simulation)',
-            marker_symbol='circle-open',
-            marker_line_width=2,
-            marker_color=colorscheme.INFECTED,
-            mode='lines',
-            line=dict(color=colorscheme.INFECTED, width=2, ),
-        ))
-
-        fig.add_trace(go.Scatter(
-            x=self.simulation.days[1:],
-            y=np.diff(self.simulation.diagnosed),
-            # mode='markers',
-            name='New Diagnosed cases per day',
-            marker_symbol='circle-open',
-            marker_line_width=2,
-            marker_color=colorscheme.DIAGNOSED,
-            mode='lines',
-            line=dict(color=colorscheme.DIAGNOSED, width=2, ),
-        ))
-
-        fig.add_trace(go.Scatter(x=self.simulation.days[1:],
-                                 y=np.diff(self.simulation.dead),  # self.simulation.active_cases,
-                                 # mode='markers',
-                                 name="New deaths per day",
-                                 marker_symbol='circle-open',
-                                 marker_line_width=2,
-                                 marker_color=colorscheme.DEAD,
-                                 mode='lines',
-                                 line=dict(color=colorscheme.DEAD, width=2, ),
-                                 ))
-
+        # fig.add_trace(go.Scatter(
+        #     x=self.simulation.days[1:],
+        #     y=np.diff(self.simulation.total_infected),
+        #     # mode='markers',
+        #     name='New infections per day (Simulation)',
+        #     marker_symbol='circle-open',
+        #     marker_line_width=2,
+        #     marker_color=colorscheme.INFECTED,
+        #     mode='lines',
+        #     line=dict(color=colorscheme.INFECTED, width=2, ),
+        # ))
+        #
+        # fig.add_trace(go.Scatter(
+        #     x=self.simulation.days[1:],
+        #     y=np.diff(self.simulation.diagnosed),
+        #     # mode='markers',
+        #     name='New Diagnosed cases per day',
+        #     marker_symbol='circle-open',
+        #     marker_line_width=2,
+        #     marker_color=colorscheme.DIAGNOSED,
+        #     mode='lines',
+        #     line=dict(color=colorscheme.DIAGNOSED, width=2, ),
+        # ))
+        #
+        # fig.add_trace(go.Scatter(x=self.simulation.days[1:],
+        #                          y=np.diff(self.simulation.dead),  # self.simulation.active_cases,
+        #                          # mode='markers',
+        #                          name="New deaths per day",
+        #                          marker_symbol='circle-open',
+        #                          marker_line_width=2,
+        #                          marker_color=colorscheme.DEAD,
+        #                          mode='lines',
+        #                          line=dict(color=colorscheme.DEAD, width=2, ),
+        #                          ))
+        #
 
         diagnosed_cases_fig_real , deaths_fig_real = self.dataPlotter.create_differential_scatter( diagnosed_sim = self.simulation.diagnosed, match_offset_days = 10, country = country)
 
@@ -518,7 +518,7 @@ class AppCreator():
             updatemenus=updatemenus,
             height = 600,
             # legend = {'xanchor': "center",'yanchor': "top"},
-            legend={'orientation': 'h', 'x': -0.1, 'y': 1.3},
+            legend={'orientation': 'h', 'x': -0.1, 'y': 1.1},
             paper_bgcolor='#FFFFFF',
             template='none',  # 'plotly_white'
             font = dict(
@@ -528,7 +528,7 @@ class AppCreator():
             )
         )
         fig.update_xaxes(title="Days",
-                         range=[0, self.simulation.sim_days.val()],
+                         # range=[0, self.simulation.sim_days.val()],
                          showline=True, linewidth=2, linecolor='black',
                          showgrid=False)
         return [fig]
