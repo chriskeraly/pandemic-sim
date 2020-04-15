@@ -200,16 +200,28 @@ class AppCreator():
             layer="below"
         )
 
-        fig.add_trace(go.Scatter(
-            x=[np.mean([self.simulation.social_isolation_window.val()[0],np.min([self.simulation.social_isolation_window.val()[1],self.simulation.sim_days.val()])]),
-               np.mean([self.simulation.intensive_testing_window.val()[0],np.min([self.simulation.intensive_testing_window.val()[1],self.simulation.sim_days.val()])])],
-            # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
-            y = [20,20],
-            text=["Social Isolation Window",
-                  "Intensive testing Window"],
-            mode="text",
-            showlegend=False
-        ))
+        if self.simulation.intensive_testing_window.val()[0] != self.simulation.intensive_testing_window.val()[1]:
+
+            fig.add_trace(go.Scatter(
+                x=[np.mean([self.simulation.social_isolation_window.val()[0],np.min([self.simulation.social_isolation_window.val()[1],self.simulation.sim_days.val()])]),
+                   np.mean([self.simulation.intensive_testing_window.val()[0],np.min([self.simulation.intensive_testing_window.val()[1],self.simulation.sim_days.val()])])],
+                # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
+                y = [20,20],
+                text=["Social Isolation Window",
+                      "Intensive testing Window"],
+                mode="text",
+                showlegend=False
+            ))
+        else:
+            print('here')
+            fig.add_trace(go.Scatter(
+                x=[np.mean([self.simulation.social_isolation_window.val()[0],np.min([self.simulation.social_isolation_window.val()[1],self.simulation.sim_days.val()])])],
+                # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
+                y = [ self.simulation.total_population.val()*0.8,20],
+                text=["Social Isolation Window"],
+                mode="text",
+                showlegend=False
+            ))
 
 
         fig.add_trace(go.Scatter(
@@ -228,13 +240,13 @@ class AppCreator():
             name='Total Diagnosed (Simulation)',
         ))
 
-        # fig.add_trace(go.Scatter(
-        #     x=self.simulation.days,
-        #     y=self.simulation.active_cases,
-        #     mode='lines',
-        #     name='Active cases (Simulation)',
-        #     line=dict(color=colorscheme.ACTIVE_CASES, width=2, ),
-        # ))
+        fig.add_trace(go.Scatter(
+            x=self.simulation.days,
+            y=self.simulation.active_cases,
+            mode='lines',
+            name='Active cases (Simulation)',
+            line=dict(color=colorscheme.ACTIVE_CASES, width=2, ),
+        ))
 
         fig.add_trace(go.Scatter(x=self.simulation.days,
                                  y=self.simulation.dead,  # self.simulation.active_cases,
@@ -248,8 +260,8 @@ class AppCreator():
         fig.add_trace(deaths_fig_real)
 
 
-
-        fig.update_yaxes(type="log", title="Individuals",
+        #
+        fig.update_yaxes(type = "log", title="Individuals",
                          range=[np.log10(1),
                                 np.log10(5*self.simulation.total_population.val())],
                          tickvals=[10,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9],
@@ -257,10 +269,80 @@ class AppCreator():
                          linewidth=2,
                          linecolor='black',
                          gridcolor='#8e9aaf')
+
+        button_layer_1_height = 1.12
+
+        tot_pop = self.simulation.total_population.val()
+        tot_inf = self.simulation.total_infected[-1]
+
+        updatemenus = list([
+            dict(active=0,
+                 buttons=list([
+                     dict(label='Log absolute',
+                          method='relayout',
+                          args=[
+                              {'title': 'Log absolute',
+                               'yaxis': {'type': 'log', 'title':"Individuals",
+                         'range':[np.log10(1),
+                                np.log10(5*tot_pop)],
+                         'tickvals':[10,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9],
+                         'showline' : True,
+                         'linewidth':2,
+                         'linecolor':'black',
+                         'gridcolor':'#8e9aaf'}}]),
+                     dict(label='Linear absolute',
+                          method='relayout',
+                          args=[
+                              {'title': 'Linear absolute',
+                               'yaxis': {'type': 'linear',
+                                         'title': "Individuals",
+                                         'range': [1,
+                                                  1.2 * tot_inf],
+                                         # 'tickvals': [10, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9],
+                                         'showline': True,
+                                         'linewidth': 2,
+                                         'linecolor': 'black',
+                                         'gridcolor': '#8e9aaf'
+                                         }}]),
+                     dict(label='Log percentage',
+                          method='relayout',
+                          args=[
+                              {'title': 'Log percentage',
+                               'yaxis': {'type': 'log', 'title': "Percentage of Population",
+                                         'range': [np.log10(1),
+                                                   np.log10(5 * tot_pop)],
+                                         'tickvals': [tot_pop/1e6, tot_pop/1e5, tot_pop/1e4, tot_pop/1e3, tot_pop/1e2, tot_pop/1e1, tot_pop/1e-0],
+                                         'ticktext' : ['0.0001%','0.001%','0.01%','0.1%','1%','10%','100%'],
+                                         'showline': True,
+                                         'linewidth': 2,
+                                         'linecolor': 'black',
+                                         'gridcolor': '#8e9aaf'}}]),
+                     dict(label='Linear percentage',
+                          method='relayout',
+                          args=[
+                              {'title': 'Linear percentage',
+                               'yaxis': {'type': 'linear',
+                                         'title': "Percentage of Population",
+                                         'range': [1,
+                                                   1.2 * tot_inf],
+                                         'tickvals': [ tot_inf*0.2, tot_inf*0.4, tot_inf*0.6, tot_inf*0.8, tot_inf ],
+                                         'ticktext' : [f'{val*100/tot_pop:0.2f}%' for val in [tot_inf*0.2, tot_inf*0.4, tot_inf*0.6, tot_inf*0.8, tot_inf ] ],
+                                         'showline': True,
+                                         'linewidth': 2,
+                                         'linecolor': 'black',
+                                         'gridcolor': '#8e9aaf'
+                                         }}])
+                 ]),
+                 x=1,
+                 y=button_layer_1_height,
+                 )
+            ])
+
         fig.update_layout(
             # autosize = False,
             # width = 1200,
             height = 600,
+            updatemenus=updatemenus,
             # legend = {'xanchor': "center",'yanchor': "top"},
             legend = {'orientation' : 'h', 'x':-0.1, 'y':1.3},
             paper_bgcolor= '#FFFFFF',
@@ -275,6 +357,10 @@ class AppCreator():
                          range=[0, self.simulation.sim_days.val()],
                          showline = True,linewidth=2, linecolor='black',
                          showgrid = False)
+
+
+
+
         return [fig]
 
 
@@ -307,15 +393,31 @@ class AppCreator():
             layer="below"
         )
 
-        fig.add_trace(go.Scatter(
-            x=[np.mean([self.simulation.social_isolation_window.val()[0],np.min([self.simulation.social_isolation_window.val()[1],self.simulation.sim_days.val()])]),
-               np.mean([self.simulation.intensive_testing_window.val()[0],np.min([self.simulation.intensive_testing_window.val()[1],self.simulation.sim_days.val()])])],
-            y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
-            text=["Social Isolation Window",
-                  "Intensive testing Window"],
-            mode="text",
-            showlegend=False
-        ))
+        if self.simulation.intensive_testing_window.val()[0] != self.simulation.intensive_testing_window.val()[1]:
+
+            fig.add_trace(go.Scatter(
+                x=[np.mean([self.simulation.social_isolation_window.val()[0], np.min(
+                    [self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()])]),
+                   np.mean([self.simulation.intensive_testing_window.val()[0], np.min(
+                       [self.simulation.intensive_testing_window.val()[1], self.simulation.sim_days.val()])])],
+                # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
+                y=[np.floor(self.simulation.total_population.val()*2/10)*2,np.floor(self.simulation.total_population.val()*2/10)*2],
+                text=["Social Isolation Window",
+                      "Intensive testing Window"],
+                mode="text",
+                showlegend=False
+            ))
+        else:
+            print('here')
+            fig.add_trace(go.Scatter(
+                x=[np.mean([self.simulation.social_isolation_window.val()[0], np.min(
+                    [self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()])])],
+                # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
+                y=[np.floor(self.simulation.total_population.val()*2/10)*2],
+                text=["Social Isolation Window"],
+                mode="text",
+                showlegend=False
+            ))
 
         fig.add_trace(go.Scatter(
             x=self.simulation.days[1:],
@@ -368,9 +470,52 @@ class AppCreator():
                          tickvals=[10, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9],
                          showline=True, linewidth=2, linecolor='black',
                          gridcolor='#8e9aaf')
+
+        tot_pop = self.simulation.total_population.val()
+        tot_inf = self.simulation.total_infected[-1]
+
+        button_layer_1_height = 1.12
+
+        updatemenus = list([
+            dict(active=0,
+                 buttons=list([
+                     dict(label='Log absolute',
+                          method='relayout',
+                          args=[
+                              {'title': 'Log absolute',
+                               'yaxis': {'type': 'log', 'title': "Individuals",
+                                         'range': [np.log10(1),
+                                                   np.log10(5 * np.max(np.diff(self.simulation.total_infected)))],
+                                         'tickvals': [10, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9],
+                                         'showline': True,
+                                         'linewidth': 2,
+                                         'linecolor': 'black',
+                                         'gridcolor': '#8e9aaf'}}]),
+                     dict(label='Linear absolute',
+                          method='relayout',
+                          args=[
+                              {'title': 'Linear absolute',
+                               'yaxis': {'type': 'linear',
+                                         'title': "Individuals",
+                                         'range': [1,
+                                                   1.2 * np.max(np.diff(self.simulation.total_infected))],
+                                         # 'tickvals': [10, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9],
+                                         'showline': True,
+                                         'linewidth': 2,
+                                         'linecolor': 'black',
+                                         'gridcolor': '#8e9aaf'
+                                         }}]),
+                 ]),
+                 x=1,
+                 y=button_layer_1_height,
+                 )
+        ])
+
+
         fig.update_layout(
             # autosize = False,
             # width = 1200,
+            updatemenus=updatemenus,
             height = 600,
             # legend = {'xanchor': "center",'yanchor': "top"},
             legend={'orientation': 'h', 'x': -0.1, 'y': 1.3},

@@ -73,6 +73,32 @@ class DataPlotter():
                     'Fraction of undiagnosed infections in spite of intensive testing': 0.1,
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 1
                     },
+               'California':
+                   {'Fraction of undiagnosed infections in normal testing regime': 0.65,
+                    'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
+                    'Simulation duration (days)': 100,
+                    'Population Simulated': 40e6,
+                    'R0: With no changes to behavior, how many people will one infected person infect': 2.13,
+                    'Death Rate': 0.012,
+                    'Social Isolation window period (days)': [33, 60],
+                    'Intensive testing and tracking window period (days)': [60, 100],
+                    "Fraction of social contact reduction during social isolation": 0.8,
+                    'Fraction of undiagnosed infections in spite of intensive testing': 0.1,
+                    "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 1
+                    },
+               'California Heard immunity scenario':
+                   {'Fraction of undiagnosed infections in normal testing regime': 0.65,
+                    'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
+                    'Simulation duration (days)': 160,
+                    'Population Simulated': 40e6,
+                    'R0: With no changes to behavior, how many people will one infected person infect': 2.13,
+                    'Death Rate': 0.012,
+                    'Social Isolation window period (days)': [63, 96],
+                    'Intensive testing and tracking window period (days)': [100, 100],
+                    "Fraction of social contact reduction during social isolation": 0.47,
+                    'Fraction of undiagnosed infections in spite of intensive testing': 0.1,
+                    "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 1
+                    },
                'NO PRESET FOR COUNTRIES BELLOW THIS LINE':
                    {'Fraction of undiagnosed infections in normal testing regime': 0.65,
                     'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
@@ -90,37 +116,65 @@ class DataPlotter():
 
     def __init__(self):
 
-        self.df = self.load_data()
+        self.df_countries = self.load_data_countries()
+        self.df_states = self.load_data_states()
 
-    def load_data(self):
+    def load_data_countries(self):
         return read_csv("data/covid-19-cases-april-4-2020.csv")
+
+    def load_data_states(self):
+        return read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv')
 
     def get_countries(self):
         preset_countries =  list(self.presets.keys())
 
-        all_countries = list(self.df.countriesAndTerritories.unique())  + ['NO PRESET FOR COUNTRIES BELLOW THIS LINE']
+        all_countries = list(self.df_states.state.unique()) + list(self.df_countries.countriesAndTerritories.unique())  + ['NO PRESET FOR COUNTRIES BELLOW THIS LINE']
         for country in preset_countries:
-            all_countries.remove(country)
+            try:
+                all_countries.remove(country)
+            except:
+                pass
 
 
         return preset_countries + all_countries
 
 
     def create_scatter(self,diagnosed_sim,  match_offset_days, country = 'United_States_of_America'):
+        if 'California' in country:
+            country = 'California'
         cases_thresh = diagnosed_sim[match_offset_days]
-        df_country = self.df[self.df['countriesAndTerritories'] == country]
-        days = df_country.dateRep
-        days = [datetime.datetime.strptime(day,"%d/%m/%Y") for day in days]
-        new_cases = df_country.cases.tolist()
 
-        deaths = df_country.deaths.tolist()
-        data = list(zip(days, new_cases, deaths))
-        data.sort()
-        days, new_cases, deaths = zip(*data)
+        if country in list(self.df_countries.countriesAndTerritories.unique()):
+
+            df_country = self.df_countries[self.df_countries['countriesAndTerritories'] == country]
+            days = df_country.dateRep
+            days = [datetime.datetime.strptime(day,"%d/%m/%Y") for day in days]
+            new_cases = df_country.cases.tolist()
+
+            deaths = df_country.deaths.tolist()
+            data = list(zip(days, new_cases, deaths))
+            data.sort()
+            days, new_cases, deaths = zip(*data)
+
+            deaths = np.cumsum(deaths)
+            accumulated_cases = np.cumsum(new_cases)
+
+        else:
+            df_state = self.df_states[self.df_states['state'] == country]
+            days = df_state.date
+            days = [datetime.datetime.strptime(day, "%Y-%m-%d") for day in days]
+            accumulated_cases = df_state.cases.tolist()
+
+            deaths = df_state.deaths.tolist()
+            data = list(zip(days, accumulated_cases, deaths))
+            data.sort()
+            days, accumulated_cases, deaths = zip(*data)
+            deaths = np.array(deaths)
+            accumulated_cases = np.array(accumulated_cases)
+
+            new_cases = np.array([0] + list(np.diff(accumulated_cases)))
 
 
-        deaths = np.cumsum(deaths)
-        accumulated_cases = np.cumsum(new_cases)
         above_thresh = accumulated_cases > cases_thresh
 
         above_thresh[:-match_offset_days] = above_thresh[match_offset_days:]
@@ -142,20 +196,40 @@ class DataPlotter():
         return diagnosed_cases_fig, deaths_fig
 
     def create_differential_scatter(self,diagnosed_sim,  match_offset_days, country = 'United_States_of_America'):
+        if 'California' in country:
+            country = 'California'
         cases_thresh = diagnosed_sim[match_offset_days]
-        df_country = self.df[self.df['countriesAndTerritories'] == country]
-        days = df_country.dateRep
-        days = [datetime.datetime.strptime(day,"%d/%m/%Y") for day in days]
-        new_cases = df_country.cases.tolist()
 
-        deaths = df_country.deaths.tolist()
-        data = list(zip(days, new_cases, deaths))
-        data.sort()
-        days, new_cases, deaths = zip(*data)
+        if country in list(self.df_countries.countriesAndTerritories.unique()):
 
+            df_country = self.df_countries[self.df_countries['countriesAndTerritories'] == country]
+            days = df_country.dateRep
+            days = [datetime.datetime.strptime(day,"%d/%m/%Y") for day in days]
+            new_cases = df_country.cases.tolist()
 
-        deaths = np.cumsum(deaths)
-        accumulated_cases = np.cumsum(new_cases)
+            deaths = df_country.deaths.tolist()
+            data = list(zip(days, new_cases, deaths))
+            data.sort()
+            days, new_cases, deaths = zip(*data)
+
+            deaths = np.cumsum(deaths)
+            accumulated_cases = np.cumsum(new_cases)
+
+        else:
+            df_state = self.df_states[self.df_states['state'] == country]
+            days = df_state.date
+            days = [datetime.datetime.strptime(day, "%Y-%m-%d") for day in days]
+            accumulated_cases = df_state.cases.tolist()
+
+            deaths = df_state.deaths.tolist()
+            data = list(zip(days, accumulated_cases, deaths))
+            data.sort()
+            days, accumulated_cases, deaths = zip(*data)
+            deaths = np.array(deaths)
+            accumulated_cases = np.array(accumulated_cases)
+
+            new_cases = np.array([0] + list(np.diff(accumulated_cases)))
+
         above_thresh = accumulated_cases > cases_thresh
 
         above_thresh[:-match_offset_days] = above_thresh[match_offset_days:]

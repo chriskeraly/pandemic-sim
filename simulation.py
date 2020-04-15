@@ -83,9 +83,9 @@ class Simulation():
         self.illness_duration = 10
         self.incubation_duration = 3
         self.mode = 'counters'
-        self.fraction_missed_cases_normal = InteractiveSimParam("Fraction of undiagnosed infections in normal testing regime", 0 , 0.95, 0.01, 0.4)
+        self.fraction_missed_cases_normal = InteractiveSimParam("Fraction of undiagnosed infections in normal testing regime", 0 , 0.999, 0.001, 0.4)
         self.day_of_diagnosis = InteractiveSimParam('Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)', 0, self.illness_duration-self.incubation_duration-1, 1, 3)
-        self.sim_days = InteractiveSimParam('Simulation duration (days)', 1 , 365, 1, 100, category = 'Simulation parameters')
+        self.sim_days = InteractiveSimParam('Simulation duration (days)', 1 , 365*2, 1, 100, category = 'Simulation parameters')
         self.total_population = InteractiveSimParam('Population Simulated', 10, 1e9, 1, 60e6, category = 'Simulation parameters')
         self.R0 = InteractiveSimParam('R0: With no changes to behavior, how many people will one infected person infect', 0 , 10 , 0.01,4)
         self.death_rate = InteractiveSimParam('Death Rate',0,0.1,0.001,0.01)
@@ -148,7 +148,8 @@ class Simulation():
             cumsum = np.cumsum(np.insert(x, 0, 0))
             temp = list((cumsum[N:] - cumsum[:-N]) / float(N))
             for i in range(N-1):
-                temp.append(temp[-1])
+                # temp.append(temp[-1])
+                temp.insert(0,temp[0])
             return np.array(temp)
 
         N = 3
