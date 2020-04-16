@@ -173,12 +173,13 @@ class AppCreator():
         # return tuple(day_sliders_max_values + slider_selected_values+ fig+ map)
         return tuple(day_sliders_max_values + slider_selected_values+ fig + diff_fig)#+ map)
 
-    def create_time_series_output(self, country):
+    def create_time_series_output(self, country, add_real = True):
         diagnosed_cases_fig_real, deaths_fig_real, days_plot = self.dataPlotter.create_scatter(
             diagnosed_sim=self.simulation.diagnosed, match_offset_days=15, country=country)
         days_line_plot = [days_plot[0] + datetime.timedelta(days=i) for i in range(self.simulation.sim_days.val()+1)]
 
         fig = go.Figure()
+
         fig.add_shape(
             type="rect",
             x0=days_line_plot[int(np.min([self.simulation.social_isolation_window.val()[0], self.simulation.sim_days.val()-1]))],
@@ -187,7 +188,7 @@ class AppCreator():
             y1=5 * self.simulation.total_population.val(),
             fillcolor="LightSalmon",
             line_width=0,
-            opacity=0.2,
+            opacity=0.3,
             layer="below"
         )
 
@@ -199,35 +200,36 @@ class AppCreator():
             y1=5 * self.simulation.total_population.val(),
             fillcolor="LightSkyBlue",
             line_width=0,
-            opacity=0.2,
+            opacity=0.3,
             layer="below"
         )
-        if self.simulation.intensive_testing_window.val()[0] != self.simulation.intensive_testing_window.val()[1]:
+        if self.simulation.social_isolation_window.val()[0] != self.simulation.social_isolation_window.val()[1]:
+            if self.simulation.intensive_testing_window.val()[0] != self.simulation.intensive_testing_window.val()[1]:
 
-            fig.add_trace(go.Scatter(
-                x=[days_line_plot[int(np.mean([self.simulation.social_isolation_window.val()[0], np.min(
-                    [self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()])]))],
-                   days_line_plot[int(
-                       np.mean([self.simulation.intensive_testing_window.val()[0], np.min(
-                           [self.simulation.intensive_testing_window.val()[1], self.simulation.sim_days.val()])]))]],
-                # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
-                y = [20,20],
-                text=["Social Isolation Window",
-                      "Intensive testing Window"],
-                mode="text",
-                showlegend=False
-            ))
-        else:
-            print('here')
-            fig.add_trace(go.Scatter(
-                x=[days_line_plot[int(np.mean([self.simulation.social_isolation_window.val()[0], np.min(
-                    [self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()])]))]],
-                # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],                # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
-                y = [ self.simulation.total_population.val()*0.8,20],
-                text=["Social Isolation Window"],
-                mode="text",
-                showlegend=False
-            ))
+                fig.add_trace(go.Scatter(
+                    x=[days_line_plot[int(np.mean([self.simulation.social_isolation_window.val()[0], np.min(
+                        [self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()])]))],
+                       days_line_plot[int(
+                           np.mean([self.simulation.intensive_testing_window.val()[0], np.min(
+                               [self.simulation.intensive_testing_window.val()[1], self.simulation.sim_days.val()])]))]],
+                    # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
+                    y = [20,20],
+                    text=["Social Isolation Window",
+                          "Intensive testing Window"],
+                    mode="text",
+                    showlegend=False
+                ))
+            else:
+                print('here')
+                fig.add_trace(go.Scatter(
+                    x=[days_line_plot[int(np.mean([self.simulation.social_isolation_window.val()[0], np.min(
+                        [self.simulation.social_isolation_window.val()[1], self.simulation.sim_days.val()])]))]],
+                    # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],                # y=[self.simulation.total_population.val()*2, self.simulation.total_population.val()*2],
+                    y = [ self.simulation.total_population.val()*0.8,20],
+                    text=["Social Isolation Window"],
+                    mode="text",
+                    showlegend=False
+                ))
 
 
         fig.add_trace(go.Scatter(
@@ -261,21 +263,23 @@ class AppCreator():
                                  name="Total Deaths (Simulation)",
                                  ))
 
-        fig.add_trace(diagnosed_cases_fig_real)
-        fig.add_trace(deaths_fig_real)
+        if add_real:
+            fig.add_trace(diagnosed_cases_fig_real)
+            fig.add_trace(deaths_fig_real)
 
 
-        #
+
         fig.update_yaxes(type = "log", title="Individuals",
                          range=[np.log10(1),
                                 np.log10(5*self.simulation.total_population.val())],
                          tickvals=[10,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9],
+                         ticks='outside',
                          showline = True,
                          linewidth=2,
                          linecolor='black',
                          gridcolor='#8e9aaf')
 
-        button_layer_1_height = 1.12
+        button_layer_1_height = 1.1
 
         tot_pop = self.simulation.total_population.val()
         tot_inf = self.simulation.total_infected[-1]
@@ -286,7 +290,7 @@ class AppCreator():
                      dict(label='Log absolute',
                           method='relayout',
                           args=[
-                              {'title': 'Log absolute',
+                              {#'title': 'Log absolute',
                                'yaxis': {'type': 'log', 'title':"Individuals",
                          'range':[np.log10(1),
                                 np.log10(5*tot_pop)],
@@ -298,7 +302,7 @@ class AppCreator():
                      dict(label='Linear absolute',
                           method='relayout',
                           args=[
-                              {'title': 'Linear absolute',
+                              {#'title': 'Linear absolute',
                                'yaxis': {'type': 'linear',
                                          'title': "Individuals",
                                          'range': [1,
@@ -312,7 +316,7 @@ class AppCreator():
                      dict(label='Log percentage',
                           method='relayout',
                           args=[
-                              {'title': 'Log percentage',
+                              {#'title': 'Log percentage',
                                'yaxis': {'type': 'log', 'title': "Percentage of Population",
                                          'range': [np.log10(1),
                                                    np.log10(5 * tot_pop)],
@@ -325,7 +329,7 @@ class AppCreator():
                      dict(label='Linear percentage',
                           method='relayout',
                           args=[
-                              {'title': 'Linear percentage',
+                              {#'title': 'Linear percentage',
                                'yaxis': {'type': 'linear',
                                          'title': "Percentage of Population",
                                          'range': [1,
@@ -348,18 +352,19 @@ class AppCreator():
             # width = 1200,
             height = 600,
             updatemenus=updatemenus,
-            # legend = {'xanchor': "center",'yanchor': "top"},
+            # # legend = {'xanchor': "center",'yanchor': "top"},
             legend = {'orientation' : 'h', 'x':-0.1, 'y':1.3},
             paper_bgcolor= '#FFFFFF',
-            template = 'none',#'plotly_white'
+            template = 'none',# 'plotly_white',
             font=dict(
                 family="Avenir",
-                size=16,
+                size=14,
                 color="#1f1f1f"
             )
         )
-        fig.update_xaxes(title="Days",
+        fig.update_xaxes(#title="Days",
                          # range=[0, self.simulation.sim_days.val()],
+                         ticks='outside',
                          showline = True,linewidth=2, linecolor='black',
                          showgrid = False)
 
@@ -385,7 +390,7 @@ class AppCreator():
             y1=5 * self.simulation.total_population.val(),
             fillcolor="LightSalmon",
             line_width=0,
-            opacity=0.2,
+            opacity=0.3,
             layer="below"
         )
 
@@ -397,7 +402,7 @@ class AppCreator():
             y1=5 * self.simulation.total_population.val(),
             fillcolor="LightSkyBlue",
             line_width=0,
-            opacity=0.2,
+            opacity=0.3,
             layer="below"
         )
 
@@ -530,11 +535,11 @@ class AppCreator():
             template='none',  # 'plotly_white'
             font = dict(
                 family="Avenir",
-                size=16,
+                size=14,
                 color="#1f1f1f"
             )
         )
-        fig.update_xaxes(title="Days",
+        fig.update_xaxes(#title="Days",
                          # range=[0, self.simulation.sim_days.val()],
                          showline=True, linewidth=2, linecolor='black',
                          showgrid=False)

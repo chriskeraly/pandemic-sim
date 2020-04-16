@@ -91,7 +91,7 @@ class DataPlotter():
                     'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
                     'Simulation duration (days)': 160,
                     'Population Simulated': 40e6,
-                    'R0: With no changes to behavior, how many people will one infected person infect': 2.13,
+                    'R0: With no changes to behavior, how many people will one infected person infect': 3.08,
                     'Death Rate': 0.012,
                     'Social Isolation window period (days)': [63, 96],
                     'Intensive testing and tracking window period (days)': [100, 100],

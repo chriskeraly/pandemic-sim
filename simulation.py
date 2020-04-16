@@ -20,6 +20,8 @@ class InteractiveSimParam():
         self.value = value
 
     def val(self):
+        if not hasattr(self,'value'):
+            ValueError(f'{self.id} hasnt had its value set')
         return copy.deepcopy(self.value)
 
     def get_widget(self):
