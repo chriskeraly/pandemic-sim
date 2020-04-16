@@ -75,16 +75,16 @@ class DataPlotter():
                     },
                'California':
                    {'Fraction of undiagnosed infections in normal testing regime': 0.65,
-                    'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
-                    'Simulation duration (days)': 100,
+                    'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 5,
+                    'Simulation duration (days)': 153,
                     'Population Simulated': 40e6,
-                    'R0: With no changes to behavior, how many people will one infected person infect': 2.13,
+                    'R0: With no changes to behavior, how many people will one infected person infect': 3.08,
                     'Death Rate': 0.012,
-                    'Social Isolation window period (days)': [33, 60],
-                    'Intensive testing and tracking window period (days)': [60, 100],
-                    "Fraction of social contact reduction during social isolation": 0.8,
-                    'Fraction of undiagnosed infections in spite of intensive testing': 0.1,
-                    "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 1
+                    'Social Isolation window period (days)': [31, 80],
+                    'Intensive testing and tracking window period (days)': [76, 153],
+                    "Fraction of social contact reduction during social isolation": 0.75,
+                    'Fraction of undiagnosed infections in spite of intensive testing': 0.24,
+                    "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 0
                     },
                'California Heard immunity scenario':
                    {'Fraction of undiagnosed infections in normal testing regime': 0.65,
@@ -182,6 +182,7 @@ class DataPlotter():
         deaths_plot = deaths[above_thresh]
         accumulated_cases_plot = accumulated_cases[above_thresh]
         days_plot = np.arange(len(deaths_plot))
+        days_plot = np.array(days)[above_thresh]
         # print(country)
         deaths_fig = go.Scatter(x=days_plot,
                                 y=deaths_plot,
@@ -193,7 +194,7 @@ class DataPlotter():
                                          mode='lines',
                                          line=dict(color=colorscheme.DIAGNOSED, width=2, dash='dashdot'),
                                         name=f'Total Diagnosed (real data for {country})')
-        return diagnosed_cases_fig, deaths_fig
+        return diagnosed_cases_fig, deaths_fig, days_plot
 
     def create_differential_scatter(self,diagnosed_sim,  match_offset_days, country = 'United_States_of_America'):
         if 'California' in country:
@@ -235,7 +236,7 @@ class DataPlotter():
         above_thresh[:-match_offset_days] = above_thresh[match_offset_days:]
 
         deaths_plot = deaths[above_thresh]
-        print(type(days))
+
         days_plot = np.array(days)[above_thresh]
 
         accumulated_cases_plot = accumulated_cases[above_thresh]
@@ -255,7 +256,7 @@ class DataPlotter():
                                          marker_line_width=2,
                                          marker_line_color=colorscheme.DIAGNOSED,
                                          name=f'New Diagnosed Cases (real data for {country})')
-        return diagnosed_cases_fig, deaths_fig
+        return diagnosed_cases_fig, deaths_fig, days_plot
 
 
 

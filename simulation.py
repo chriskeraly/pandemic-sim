@@ -81,7 +81,7 @@ class Simulation():
         print("created simulation")
         self.initial_contamination = 30
         self.illness_duration = 10
-        self.incubation_duration = 3
+        self.incubation_duration = 4
         self.mode = 'counters'
         self.fraction_missed_cases_normal = InteractiveSimParam("Fraction of undiagnosed infections in normal testing regime", 0 , 0.999, 0.001, 0.4)
         self.day_of_diagnosis = InteractiveSimParam('Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)', 0, self.illness_duration-self.incubation_duration-1, 1, 3)
@@ -187,7 +187,8 @@ class Simulation():
                 Reff = self.R0.val()
 
 
-            Reff_day = self.fraction_missed_cases_normal.val() *  Reff / (self.day_of_diagnosis.val()) + (1-self.fraction_missed_cases_normal.val()) * Reff / (self.illness_duration - self.incubation_duration)
+            Reff_day = Reff/((1-self.fraction_missed_cases_normal.val())*self.day_of_diagnosis.val() + self.fraction_missed_cases_normal.val()* (self.illness_duration - self.incubation_duration))
+            # Reff_day = Reff/(self.illness_duration - self.incubation_duration)
 
             self.population_manager.spread_disease(day, Reff_day)
 
