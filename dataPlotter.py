@@ -10,12 +10,12 @@ import numpy as np
 class DataPlotter():
     presets = {'China':
                    {'Fraction of undiagnosed infections in normal testing regime': 0.65,
-                    'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
+                    'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 5,
                     'Simulation duration (days)': 100,
                     'Population Simulated': 1500000,
-                    'R0: With no changes to behavior, how many people will one infected person infect': 5.3,
-                    'Death Rate': 0.02,
-                    'Social Isolation window period (days)': [18, 70],
+                    'R0: With no changes to behavior, how many people will one infected person infect': 5.9,
+                    'Death Rate': 0.018,
+                    'Social Isolation window period (days)': [24, 70],
                     'Intensive testing and tracking window period (days)': [62, 365],
                     "Fraction of social contact reduction during social isolation": 0.9,
                     'Fraction of undiagnosed infections in spite of intensive testing': 0.05,
@@ -23,13 +23,13 @@ class DataPlotter():
                     },
                'United_States_of_America':
                    {'Fraction of undiagnosed infections in normal testing regime': 0.65,
-                    'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
-                    'Simulation duration (days)': 100,
+                    'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 5,
+                    'Simulation duration (days)': 90,
                     'Population Simulated': 200e6,
-                    'R0: With no changes to behavior, how many people will one infected person infect': 3.86,
+                    'R0: With no changes to behavior, how many people will one infected person infect': 5.11,
                     'Death Rate': 0.013,
-                    'Social Isolation window period (days)': [25, 55],
-                    'Intensive testing and tracking window period (days)': [50, 365],
+                    'Social Isolation window period (days)': [33, 90],
+                    'Intensive testing and tracking window period (days)': [100, 100],
                     "Fraction of social contact reduction during social isolation": 0.82,
                     'Fraction of undiagnosed infections in spite of intensive testing': 0.03,
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 0
@@ -38,39 +38,39 @@ class DataPlotter():
                    {'Fraction of undiagnosed infections in normal testing regime': 0.65,
                     'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
                     'Simulation duration (days)': 100,
-                    'Population Simulated': 200e6,
-                    'R0: With no changes to behavior, how many people will one infected person infect': 4,
-                    'Death Rate': 0.028,
-                    'Social Isolation window period (days)': [22, 55],
-                    'Intensive testing and tracking window period (days)': [100, 365],
+                    'Population Simulated': 60e6,
+                    'R0: With no changes to behavior, how many people will one infected person infect': 4.44,
+                    'Death Rate': 0.03,
+                    'Social Isolation window period (days)': [29, 100],
+                    'Intensive testing and tracking window period (days)': [100, 100],
                     "Fraction of social contact reduction during social isolation": 0.8,
-                    'Fraction of undiagnosed infections in spite of intensive testing': 0.03,
+                    'Fraction of undiagnosed infections in spite of intensive testing': 0.035,
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 0
                     },
                'South_Korea':
                    {'Fraction of undiagnosed infections in normal testing regime': 0.65,
-                    'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
+                    'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 5,
                     'Simulation duration (days)': 100,
-                    'Population Simulated': 200e6,
+                    'Population Simulated': 20e6,
                     'R0: With no changes to behavior, how many people will one infected person infect': 4,
                     'Death Rate': 0.014,
                     'Social Isolation window period (days)': [0, 100],
-                    'Intensive testing and tracking window period (days)': [12, 100],
+                    'Intensive testing and tracking window period (days)': [19, 100],
                     "Fraction of social contact reduction during social isolation": 0.15,
-                    'Fraction of undiagnosed infections in spite of intensive testing': 0.13,
+                    'Fraction of undiagnosed infections in spite of intensive testing': 0.17,
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 0
                     },
                'Singapore':
                    {'Fraction of undiagnosed infections in normal testing regime': 0.65,
                     'Days during which someone is infected and can spread the disease before they are tested and quarantined (normal testing regime)': 4,
                     'Simulation duration (days)': 100,
-                    'Population Simulated': 200e6,
+                    'Population Simulated': 10e6,
                     'R0: With no changes to behavior, how many people will one infected person infect': 4,
-                    'Death Rate': 0.014,
-                    'Social Isolation window period (days)': [0, 17],
-                    'Intensive testing and tracking window period (days)': [6, 100],
+                    'Death Rate': 0.07,
+                    'Social Isolation window period (days)': [0, 35],
+                    'Intensive testing and tracking window period (days)': [35, 100],
                     "Fraction of social contact reduction during social isolation": 0.8,
-                    'Fraction of undiagnosed infections in spite of intensive testing': 0.1,
+                    'Fraction of undiagnosed infections in spite of intensive testing': 0.24,
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 1
                     },
                'California':
@@ -80,9 +80,9 @@ class DataPlotter():
                     'Population Simulated': 40e6,
                     'R0: With no changes to behavior, how many people will one infected person infect': 3.08,
                     'Death Rate': 0.012,
-                    'Social Isolation window period (days)': [31, 80],
+                    'Social Isolation window period (days)': [32, 80],
                     'Intensive testing and tracking window period (days)': [76, 153],
-                    "Fraction of social contact reduction during social isolation": 0.75,
+                    "Fraction of social contact reduction during social isolation": 0.73,
                     'Fraction of undiagnosed infections in spite of intensive testing': 0.24,
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 0
                     },
@@ -120,7 +120,7 @@ class DataPlotter():
         self.df_states = self.load_data_states()
 
     def load_data_countries(self):
-        return read_csv("data/covid-19-cases-april-4-2020.csv")
+        return read_csv("data/covid-19-cases-april-20-2020.csv")
 
     def load_data_states(self):
         return read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv')

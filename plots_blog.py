@@ -31,11 +31,10 @@ fig.update_yaxes({'type': 'linear',
 fig.layout.legend.y =1.15
 fig.layout.margin.update( dict(l=20, r=20, t=80, b=50))
 fig.layout.updatemenus[0].y = 1.05
-# fig.show()
-pio.write_html(fig,file='html_plots/California_heard_immunity.html', auto_open=True)
-quit()
-# py.plot(fig, filename = 'California Heard immunity scenario',auto_open=False)
-print('published 1')
+#fig.show()
+
+#py.plot(fig, filename = 'California Heard immunity scenario',auto_open=False)
+
 
 ## HEARD IMMUNITY NO SOCIAL ISOALTION
 presets = appcreator.dataPlotter.presets['California Heard immunity scenario']
@@ -60,8 +59,8 @@ fig.layout.legend.y =1.15
 
 fig.layout.margin.update( dict(l=20, r=20, t=80, b=50))
 
-# fig.show()
-# py.plot(fig, filename = 'California Heard immunity scenario, no social isolation',auto_open=True)
+#fig.show()
+#py.plot(fig, filename = 'California Heard immunity scenario, no social isolation',auto_open=True)
 print('2')
 ## CALIFORNIA No testing
 presets = {'Fraction of undiagnosed infections in normal testing regime': 0.65,
@@ -70,9 +69,9 @@ presets = {'Fraction of undiagnosed infections in normal testing regime': 0.65,
                     'Population Simulated': 40e6,
                     'R0: With no changes to behavior, how many people will one infected person infect': 3.08,
                     'Death Rate': 0.012,
-                    'Social Isolation window period (days)': [31, 80],
+                    'Social Isolation window period (days)': [32, 80],
                     'Intensive testing and tracking window period (days)': [120, 120],
-                    "Fraction of social contact reduction during social isolation": 0.75,
+                    "Fraction of social contact reduction during social isolation": 0.73,
                     'Fraction of undiagnosed infections in spite of intensive testing': 0.24,
                     "Days during which someone is infected and can spread the disease before they are tested and quarantined (intensive testing regime)": 0
                     }
@@ -85,14 +84,14 @@ fig.layout.legend.y =1.15
 fig.layout.margin.update( dict(l=20, r=20, t=80, b=50))
 
 
-# fig.show()
-#py.plot(fig, filename = 'California Heard immunity scenario, no Testing',auto_open=False)
+#fig.show()
+# py.plot(fig, filename = 'California Heard immunity scenario, no Testing',auto_open=False)
 
 fig = appcreator.create_differential_time_series_output('California')[0]
-# fig.show()
 fig.layout.margin.update( dict(l=20, r=20, t=80, b=50))
+#fig.show()
 
-#py.plot(fig, filename = 'California Heard immunity scenario, no Testing, differential',auto_open=False)
+py.plot(fig, filename = 'California Heard immunity scenario, no Testing, differential',auto_open=False)
 
 
 ## CALIFORNIA 76% signup
@@ -105,7 +104,7 @@ fig.layout.margin.update( dict(l=20, r=20, t=80, b=50))
 
 #py.plot(fig, filename = 'California 76 percent signup',auto_open=False)
 
-# fig.show()
+#fig.show()
 
 ## CALIFORNIA 90% signup
 presets = appcreator.dataPlotter.presets['California']
@@ -113,7 +112,7 @@ presets["Fraction of undiagnosed infections in spite of intensive testing"]= 0.1
 appcreator.simulation.set_params(presets)
 appcreator.simulation.run()
 fig = appcreator.create_time_series_output('California', add_real=True)[0]
-# fig.show()
+# #fig.show()
 fig.layout.legend.y =1.15
 fig.layout.margin.update( dict(l=20, r=20, t=80, b=50))
 
@@ -127,8 +126,8 @@ presets["Fraction of undiagnosed infections in spite of intensive testing"]= 0.5
 appcreator.simulation.set_params(presets)
 appcreator.simulation.run()
 fig = appcreator.create_time_series_output('California', add_real=True)[0]
-# fig.show()
 fig.layout.legend.y =1.15
 fig.layout.margin.update( dict(l=20, r=20, t=80, b=50))
+#fig.show()
 
-py.plot(fig, filename = 'California 50 percent signup',auto_open=True)
+#py.plot(fig, filename = 'California 50 percent signup',auto_open=True)
